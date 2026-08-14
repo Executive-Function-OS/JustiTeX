@@ -1,0 +1,147 @@
+% pleading.sty — UTCR-compliant Oregon pleading paper
+% Geometry reverse-engineered from Memorandum_of_Points_and_Authorities.pdf
+%   page 612 x 792 bp (letter); text left 1.5in, right 1in (6in measure)
+%   28-line grid, 23.1425 bp apart, first baseline 94.455 bp from page top
+%   line numbers right-aligned at x = 75.6 bp
+%   double left rule at x = 90.72 bp and 93.60 bp, 72 bp -> 720 bp from top
+%   footer baseline 43.54 bp from page bottom, flush with text left margin
+\NeedsTeXFormat{LaTeX2e}
+\ProvidesPackage{pleading}[2026/08/03 Oregon pleading paper]
+
+\RequirePackage{fontspec}
+\RequirePackage{geometry}
+\RequirePackage{setspace}
+\RequirePackage{eso-pic}
+\RequirePackage{array}
+\RequirePackage{calc}
+
+\def\LMpath{/usr/share/texmf/fonts/opentype/public/lm/}
+
+\setmainfont{lmroman12-regular.otf}[
+  Path=\LMpath,
+  BoldFont=lmroman12-bold.otf,
+  ItalicFont=lmroman12-italic.otf,
+  BoldItalicFont=lmroman10-bolditalic.otf]
+
+\newfontfamily\lmten{lmroman10-regular.otf}[
+  Path=\LMpath,
+  BoldFont=lmroman10-bold.otf,
+  ItalicFont=lmroman10-italic.otf,
+  BoldItalicFont=lmroman10-bolditalic.otf]
+
+\newfontfamily\ballotfont{DejaVu Sans}
+
+% ---- page geometry -------------------------------------------------------
+\geometry{letterpaper,
+          left=1.5in,right=1in,
+          top=71.3125bp,bottom=72.6875bp,
+          headheight=0bp,headsep=0bp,footskip=0bp,nomarginpar}
+
+\newlength{\gridline}\setlength{\gridline}{23.1425bp}
+\setlength{\topskip}{\gridline}
+\setstretch{1.601576}       % 14.5pt x 1.601576 = 23.1425bp baseline grid
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{0pt}
+\raggedbottom
+\pagestyle{empty}
+
+% ---- widow and orphan control -------------------------------------------
+% Pleading paper uses a fixed 28-line grid with \raggedbottom, so a page that
+% ends a line or two short costs nothing.  A stranded line or a heading
+% orphaned at the foot of a page, by contrast, reads badly in a filed
+% document.  These penalties are therefore set to the maximum.
+\widowpenalty=10000         % no single line stranded at the top of a page
+\clubpenalty=10000          % no single line stranded at the foot of a page
+\displaywidowpenalty=10000
+\brokenpenalty=10000        % never split a hyphenated word across pages
+\predisplaypenalty=10000
+
+% ---- footer text ---------------------------------------------------------
+\newcommand{\pleadingfooter}{}
+\newcommand{\setpleadingfooter}[1]{\renewcommand{\pleadingfooter}{#1}}
+
+% ---- line numbers + double rule + footer ---------------------------------
+\makeatletter
+\newcommand{\pl@grid}{%
+  \setlength{\unitlength}{1bp}%
+  \put(90.72,72.72){\rule{0.4bp}{647.28bp}}%
+  \put(93.60,72.72){\rule{0.4bp}{647.28bp}}%
+  \@tempcnta=1\relax
+  \@whilenum\@tempcnta<29\do{%
+    \@tempcntb=\@tempcnta \advance\@tempcntb by -1\relax
+    \setlength{\@tempdima}{23.1425bp}%
+    \multiply\@tempdima by \@tempcntb
+    \setlength{\@tempdimb}{697.545bp}%
+    \addtolength{\@tempdimb}{-\@tempdima}%
+    \setlength{\@tempdimb}{0.996264\@tempdimb}% TeX pt -> bp for \put
+    \put(75.6,\strip@pt\@tempdimb){%
+      \makebox[0pt][r]{\lmten\fontsize{10}{10}\selectfont\the\@tempcnta}}%
+    \advance\@tempcnta by 1\relax
+  }%
+  \put(108,43.54){%
+    \makebox[0pt][l]{\lmten\fontsize{10}{10}\selectfont\pleadingfooter}}%
+}
+\AddToShipoutPictureBG{\AtPageLowerLeft{\pl@grid}}
+\makeatother
+
+% ---- caption block -------------------------------------------------------
+% col 1 = 210bp + 6bp gutter -> vertical divider 216bp right of the margin
+\newcommand{\captionfont}{\setstretch{1}\lmten\fontsize{10.5}{10.46}\selectfont}
+
+\newcommand{\pleadingcaption}[2]{%
+  \noindent
+  \begin{tabular}{@{}p{210bp}@{\hspace{6bp}}|@{\hspace{9bp}}p{206.6bp}@{}}
+  \captionfont #1 & \captionfont #2 \\
+  \cline{1-1}
+  \end{tabular}%
+  \par
+}
+
+% ---- structural helpers --------------------------------------------------
+\newcommand{\blankline}{\par\vspace{\gridline}}
+
+% snap the next baseline back onto the 28-line grid
+\makeatletter
+\newcommand{\snaptogrid}{\par\penalty10000\relax\prevdepth=0pt\relax
+  \@tempdima=\pagetotal \advance\@tempdima by \pagedepth
+  \@tempcnta=\@tempdima
+  \@tempcntb=\gridline
+  \divide\@tempcnta by \@tempcntb
+  \advance\@tempcnta by 1\relax
+  \multiply\@tempcnta by \@tempcntb
+  \@tempdimb=\@tempcnta sp\relax
+  \advance\@tempdimb by -\@tempdima
+  \vspace*{\@tempdimb}\par}
+\makeatother
+
+% numbered paragraph: \para{1}{text}
+\newcommand{\para}[2]{%
+  \par\noindent\hangindent=54bp\hangafter=1
+  \makebox[54bp][l]{#1.}\ignorespaces #2\par\vspace{\gridline}}
+
+% lettered sub-paragraph: \subpara{a}{text}
+\newcommand{\subpara}[2]{%
+  \par\noindent\hspace*{54bp}\hangindent=108bp\hangafter=1
+  \makebox[54bp][l]{(#1)}\ignorespaces #2\par\vspace{\gridline}}
+
+\newcommand{\xbox}{{\ballotfont\char"2612}}
+
+% ---- heading helpers -----------------------------------------------------
+% Headings refuse to sit alone at the foot of a page.  The mechanism is
+% subtractive rather than additive: a break is permitted BEFORE the heading's
+% leading space, and forbidden everywhere between the heading and the text it
+% introduces.  If the heading plus its first lines will not fit, TeX has no
+% legal breakpoint after the heading and moves the whole unit forward.
+%
+% Do NOT use \needspace here.  Under \raggedbottom a short page carries no
+% cost, so needspace's \penalty-100 becomes the most attractive breakpoint on
+% the page and every heading starts a new page.
+\newcommand{\romanhead}[1]{%
+  \par\vspace{\gridline}%
+  {\centering\bfseries #1\par}\nopagebreak\vspace{\gridline}\nopagebreak}
+\newcommand{\subhead}[1]{%
+  \par\vspace{\gridline}%
+  {\noindent\bfseries #1\par}\nopagebreak\vspace{\gridline}\nopagebreak}
+
+% Signature blocks are set inside a minipage, which TeX cannot split, so a
+% block that does not fit migrates whole to the next page automatically.
