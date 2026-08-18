@@ -1,102 +1,130 @@
 """
-JustiTeX Core Compiler Engine
-Converts Markdown legal drafts into court-compliant 28-line LaTeX PDFs.
+JustiTeX Parser & Compiler Module
+Converts raw Markdown / text legal drafts into court-grade 28-line Oregon legal pleadings (PDF & LaTeX).
 """
 
 import os
-import sys
-import subprocess
-import argparse
-import shutil
 import re
+import sys
+import shutil
+import subprocess
 
-def compile_markdown_to_pdf(input_md_path, output_pdf_path, template_path=None):
-    """
-    Compiles a Markdown pleading into a 28-line UTCR-compliant PDF using pdflatex.
-    """
-    if not os.path.exists(input_md_path):
-        raise FileNotFoundError(f"Input file not found: {input_md_path}")
-        
-    if template_path is None:
+class JustiTeXCompiler:
+    def __init__(self, template_path=None):
         base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-        template_path = os.path.join(base_dir, "templates", "oregon_28line_FROZEN.tex")
-
-    if not os.path.exists(template_path):
-        raise FileNotFoundError(f"Template file not found: {template_path}")
-
-    # Read markdown content
-    with open(input_md_path, "r", encoding="utf-8") as f:
-        md_text = f.read()
-
-    # Simple conversion logic for core text block
-    tex_body = []
-    for line in md_text.splitlines():
-        if line.startswith("# "):
-            tex_body.append(f"\\section*{{{line[2:].strip()}}}")
-        elif line.startswith("## "):
-            tex_body.append(f"\\subsection*{{{line[3:].strip()}}}")
-        elif line.startswith("### "):
-            tex_body.append(f"\\subsubsection*{{{line[4:].strip()}}}")
-        elif line.strip() == "":
-            tex_body.append("\\par\\vspace{0.5em}")
+        if template_path is None:
+            self.template_path = os.path.join(base_dir, "templates", "oregon_28line_FROZEN.tex")
         else:
-            clean_line = line.replace("&", "\\&").replace("_", "\\_").replace("%", "\\%")
-            clean_line = re.sub(r'\*(.*?)\*', r'\\textit{\1}', clean_line)
-            clean_line = re.sub(r'\*\*(.*?)\*\*', r'\\textbf{\1}', clean_line)
-            tex_body.append(clean_line)
-            
-    body_content = "\n".join(tex_body)
+            self.template_path = template_path
 
-    # Read base template
-    with open(template_path, "r", encoding="utf-8") as f:
-        tex_template = f.read()
+        self.sty_path = os.path.join(os.path.dirname(self.template_path), "pleading.sty")
 
-    # Replace end{document} with content + end{document}
-    if "\\end{document}" in tex_template:
-        full_tex = tex_template.replace("\\end{document}", f"{body_content}\n\\end{{document}}")
-    else:
-        full_tex = tex_template + "\n\\begin{document}\n" + body_content + "\n\\end{document}\n"
+    def parse_markdown_to_latex(self, md_content):
+        """
+        Parses Markdown text into Oregon UTCR 28-line legal pleading commands (\para, \subpara, \romanhead, etc.)
+        """
+        latex_lines = []
+        para_counter = 1
+        
+        for line in md_content.splitlines():
+            line_str = line.strip()
+            if not line_str:
+                continue
 
-    # Temporary build directory
-    build_dir = os.path.dirname(os.path.abspath(output_pdf_path))
-    os.makedirs(build_dir, exist_ok=True)
-    
-    tex_filename = os.path.join(build_dir, "temp_pleading.tex")
-    with open(tex_filename, "w", encoding="utf-8") as f:
-        f.write(full_tex)
+            # Heading 1 -> \romanhead
+            if line_str.startswith("# "):
+                title = line_str[2:].strip().upper()
+                latex_lines.append(f"\\romanhead{{{title}}}")
+            # Heading 2 -> \subhead
+            elif line_str.startswith("## "):
+                title = line_str[3:].strip()
+                latex_lines.append(f"\\subhead{{{title}}}")
+            # Heading 3 -> Bold Subhead
+            elif line_str.startswith("### "):
+                title = line_str[4:].strip()
+                latex_lines.append(f"\\subhead{{{title}}}")
+            # Numbered paragraph (e.g., "1. This is a paragraph")
+            elif re.match(r'^\d+\.\s+', line_str):
+                text_part = re.sub(r'^\d+\.\s+', '', line_str)
+                text_part = self._escape_latex_chars(text_part)
+                latex_lines.append(f"\\para{{{para_counter}}}{{{text_part}}}")
+                para_counter += 1
+            # Lettered sub-paragraph (e.g., "a. Sub-point")
+            elif re.match(r'^[a-z]\.\s+', line_str):
+                letter = line_str[0]
+                text_part = line_str[2:].strip()
+                text_part = self._escape_latex_chars(text_part)
+                latex_lines.append(f"\\subpara{{{letter}}}{{{text_part}}}")
+            # Regular paragraph
+            else:
+                clean_text = self._escape_latex_chars(line_str)
+                latex_lines.append(f"\\para{{{para_counter}}}{{{clean_text}}}")
+                para_counter += 1
 
-    # Copy dependency pleading.sty to build dir if present
-    template_dir = os.path.dirname(template_path)
-    sty_path = os.path.join(template_dir, "pleading.sty")
-    if os.path.exists(sty_path):
-        shutil.copy(sty_path, os.path.join(build_dir, "pleading.sty"))
+        return "\n\n".join(latex_lines)
 
-    # Invoke pdflatex
-    cmd = [
-        "pdflatex",
-        "-interaction=nonstopmode",
-        f"-output-directory={build_dir}",
-        tex_filename
-    ]
-    
-    subprocess.run(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-    generated_pdf = os.path.join(build_dir, "temp_pleading.pdf")
-    
-    if os.path.exists(generated_pdf):
-        if os.path.exists(output_pdf_path):
-            os.remove(output_pdf_path)
-        os.rename(generated_pdf, output_pdf_path)
-        print(f"Successfully compiled JustiTeX pleading: {output_pdf_path}")
-        return True
-    else:
-        print(f"Failed to generate PDF. Check LaTeX logs at {os.path.join(build_dir, 'temp_pleading.log')}")
-        return False
+    def _escape_latex_chars(self, text):
+        # Escape special LaTeX characters safely
+        text = text.replace("&", r"\&").replace("#", r"\#").replace("$", r"\$").replace("%", r"\%")
+        text = re.sub(r'\*\*(.*?)\*\*', r'\\textbf{\1}', text)
+        text = re.sub(r'\*(.*?)\*', r'\\textit{\1}', text)
+        return text
+
+    def compile(self, input_md_path, output_pdf_path):
+        if not os.path.exists(input_md_path):
+            raise FileNotFoundError(f"Input file not found: {input_md_path}")
+
+        with open(input_md_path, "r", encoding="utf-8") as f:
+            md_content = f.read()
+
+        parsed_body = self.parse_markdown_to_latex(md_content)
+
+        with open(self.template_path, "r", encoding="utf-8") as f:
+            template_content = f.read()
+
+        if "\\end{document}" in template_content:
+            full_tex = template_content.replace("\\end{document}", f"{parsed_body}\n\\end{{document}}")
+        else:
+            full_tex = template_content + "\n" + parsed_body + "\n\\end{document}\n"
+
+        out_dir = os.path.dirname(os.path.abspath(output_pdf_path))
+        os.makedirs(out_dir, exist_ok=True)
+        
+        base_name = os.path.splitext(os.path.basename(output_pdf_path))[0]
+        tex_file = os.path.join(out_dir, f"{base_name}.tex")
+
+        with open(tex_file, "w", encoding="utf-8") as f:
+            f.write(full_tex)
+
+        # Copy pleading.sty to build output dir if available
+        if os.path.exists(self.sty_path):
+            shutil.copy(self.sty_path, os.path.join(out_dir, "pleading.sty"))
+
+        cmd = [
+            "pdflatex",
+            "-interaction=nonstopmode",
+            f"-output-directory={out_dir}",
+            tex_file
+        ]
+
+        result = subprocess.run(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        pdf_file = os.path.join(out_dir, f"{base_name}.pdf")
+
+        if os.path.exists(pdf_file):
+            print(f"[JustiTeX] Compiled court-grade 28-line pleading: {pdf_file}")
+            return pdf_file
+        else:
+            print(f"[JustiTeX] LaTeX compilation failed. Log file: {os.path.join(out_dir, base_name + '.log')}")
+            return None
+
+
+def main():
+    if len(sys.argv) < 3:
+        print("Usage: justitex-compile <input.md> <output.pdf>")
+        sys.exit(1)
+        
+    compiler = JustiTeXCompiler()
+    compiler.compile(sys.argv[1], sys.argv[2])
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="JustiTeX 28-Line Legal Pleading Compiler")
-    parser.add_argument("--input", required=True, help="Path to input Markdown pleading file")
-    parser.add_argument("--output", required=True, help="Path to output compiled PDF file")
-    parser.add_argument("--template", help="Optional path to custom .tex template")
-    args = parser.parse_args()
-
-    compile_markdown_to_pdf(args.input, args.output, args.template)
+    main()
