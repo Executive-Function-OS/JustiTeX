@@ -1,66 +1,82 @@
-import React, { useState } from 'react';
-import { Scale, FileText, Play, Sparkles, CheckCircle2 } from 'lucide-react';
+import React, { useState } from "react";
+import { Scale, FileText, Play, Sparkles, CheckCircle2 } from "lucide-react";
 
-const SAMPLE_MARKDOWN = ;
+const SAMPLE_MARKDOWN = `# IN THE CIRCUIT COURT OF THE STATE OF OREGON
+# FOR THE COUNTY OF CLACKAMAS
+
+ANNIKA ERIKSSON,
+    Plaintiff,
+v.
+CITY OF OREGON CITY,
+    Defendant.
+
+Case No. 24CV21417
+
+## MOTION FOR EMERGENCY INJUNCTIVE RELIEF
+
+1. Plaintiff moves this Court for an emergency order restoring municipal water service to 12054 Chapin Court.
+
+2. On June 25, 2024, Defendant disconnected municipal water service without pre-deprivation hearing.
+
+3. Under ORS 757.760 and 42 U.S.C. § 1983, the unconstitutional denial of essential public utility service constitutes immediate irreparable harm.
+
+DATED: August 19, 2026.
+
+Respectfully submitted,
+
+/s/ Annika Eriksson
+ANNIKA ERIKSSON, Pro Se`;
 
 export default function App() {
   const [markdown, setMarkdown] = useState(SAMPLE_MARKDOWN);
   const [isCompiling, setIsCompiling] = useState(false);
 
   const parsePleading = (rawText) => {
-    const lines = rawText.split('
-');
+    const lines = rawText.split("\n");
     let courtLines = [];
-    let plaintiff = '';
-    let defendant = '';
-    let caseNo = '';
-    let title = '';
+    let plaintiff = "";
+    let defendant = "";
+    let caseNo = "";
+    let title = "";
     let paragraphs = [];
     let signatureLines = [];
-    let currentSection = 'court';
+
+    let currentSection = "court";
 
     for (let line of lines) {
       const trimmed = line.trim();
-      if (trimmed.startsWith('# IN THE') || trimmed.startsWith('# FOR THE')) {
-        courtLines.push(trimmed.replace(/^#+\s*/, ''));
-      } else if (trimmed.includes('Case No.') || trimmed.includes('Case No')) {
+      if (trimmed.startsWith("# IN THE") || trimmed.startsWith("# FOR THE")) {
+        courtLines.push(trimmed.replace(/^#+\s*/, ""));
+      } else if (trimmed.includes("Case No.") || trimmed.includes("Case No")) {
         caseNo = trimmed;
-        currentSection = 'body';
-      } else if (trimmed.startsWith('## ')) {
-        title = trimmed.replace(/^##+\s*/, '');
-        currentSection = 'body';
-      } else if (trimmed.startsWith('v.') || trimmed.startsWith('vs.')) {
+        currentSection = "body";
+      } else if (trimmed.startsWith("## ")) {
+        title = trimmed.replace(/^##+\s*/, "");
+        currentSection = "body";
+      } else if (trimmed.startsWith("v.") || trimmed.startsWith("vs.")) {
         // caption separator
-      } else if (currentSection === 'court' && (trimmed.includes('Plaintiff') || trimmed.includes('PLAINTIFF'))) {
+      } else if (currentSection === "court" && (trimmed.includes("Plaintiff") || trimmed.includes("PLAINTIFF"))) {
         plaintiff = trimmed;
-      } else if (currentSection === 'court' && (trimmed.includes('Defendant') || trimmed.includes('DEFENDANT'))) {
+      } else if (currentSection === "court" && (trimmed.includes("Defendant") || trimmed.includes("DEFENDANT"))) {
         defendant = trimmed;
-      } else if (trimmed.startsWith('DATED:') || trimmed.startsWith('Respectfully') || trimmed.startsWith('/s/') || trimmed.endsWith('Pro Se')) {
+      } else if (trimmed.startsWith("DATED:") || trimmed.startsWith("Respectfully") || trimmed.startsWith("/s/") || trimmed.endsWith("Pro Se")) {
         signatureLines.push(trimmed);
-      } else if (trimmed.length > 0 && currentSection === 'body') {
+      } else if (trimmed.length > 0 && currentSection === "body") {
         paragraphs.push(trimmed);
       }
     }
 
     return {
-      courtHeader: courtLines.length ? courtLines.join('
-') : 'IN THE CIRCUIT COURT OF THE STATE OF OREGON
-FOR THE COUNTY OF CLACKAMAS',
-      plaintiff: plaintiff || 'ANNIKA ERIKSSON,
-  Plaintiff,',
-      defendant: defendant || 'CITY OF OREGON CITY,
-  Defendant.',
-      caseNo: caseNo || 'Case No. 24CV21417',
-      title: title || 'MOTION FOR EMERGENCY INJUNCTIVE RELIEF',
+      courtHeader: courtLines.length ? courtLines.join("\n") : "IN THE CIRCUIT COURT OF THE STATE OF OREGON\nFOR THE COUNTY OF CLACKAMAS",
+      plaintiff: plaintiff || "ANNIKA ERIKSSON,\n  Plaintiff,",
+      defendant: defendant || "CITY OF OREGON CITY,\n  Defendant.",
+      caseNo: caseNo || "Case No. 24CV21417",
+      title: title || "MOTION FOR EMERGENCY INJUNCTIVE RELIEF",
       paragraphs: paragraphs.length ? paragraphs : [
-        '1. Plaintiff moves this Court for an emergency order restoring municipal water service to 12054 Chapin Court.',
-        '2. On June 25, 2024, Defendant disconnected municipal water service without pre-deprivation hearing.'
+        "1. Plaintiff moves this Court for an emergency order restoring municipal water service to 12054 Chapin Court.",
+        "2. On June 25, 2024, Defendant disconnected municipal water service without pre-deprivation hearing."
       ],
-      signature: signatureLines.length ? signatureLines.join('
-') : 'DATED: August 19, 2026.
-Respectfully submitted,
-/s/ Annika Eriksson
-ANNIKA ERIKSSON, Pro Se'
+      signature: signatureLines.length ? signatureLines.join("\n") : "DATED: August 19, 2026.\nRespectfully submitted,\n/s/ Annika Eriksson\nANNIKA ERIKSSON, Pro Se"
     };
   };
 
