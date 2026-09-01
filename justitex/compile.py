@@ -84,9 +84,9 @@ class JustiTeXCompiler:
                 left_parties = [
                     r"\textbf{ANNIKA ERIKSSON and DONALD BUCKHOUT,}",
                     r"\hspace*{1.5em}\textit{Plaintiffs,}",
-                    r"\vspace{0.5em}",
+                    r"\vspace{0.75em}",
                     r"\textit{v.}",
-                    r"\vspace{0.5em}",
+                    r"\vspace{0.75em}",
                     r"\textbf{CITY OF OREGON CITY,} an Oregon municipal corporation; \textbf{TONY KONKOL,} individually; \textbf{TODD KENNEDY,} individually; \textbf{ASHLEY FRAIJO,} individually; \textbf{ALEXANDRA TROUTMAN,} individually; \textbf{RAMON HENDERSON,} individually; and \textbf{VANCE WALKER,} individually,",
                     r"\hspace*{1.5em}\textit{Defendants.}"
                 ]
@@ -110,17 +110,13 @@ class JustiTeXCompiler:
 \\small\\raggedright
 {left_tex}
 \\end{{minipage}}%
-\\hspace{{0.03\\textwidth}}%
-\\vrule width 0.75pt%
-\\hspace{{0.03\\textwidth}}%
-\\begin{{minipage}}[t]{{0.44\\textwidth}}
+\\hfill
+\\begin{{minipage}}[t]{{0.46\\textwidth}}
 \\small\\raggedright
 {right_tex}
 \\end{{minipage}}
 \\end{{singlespace}}
-\\vspace{{1em}}
-\\hrule
-\\vspace{{1em}}
+\\vspace{{1.5em}}
 """
                 latex_lines.append(caption_tex)
                 while i < len(lines) and not lines[i].startswith("## I. INTRODUCTION") and not lines[i].startswith("# I. INTRODUCTION"):
