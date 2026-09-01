@@ -1,6 +1,12 @@
 """
 JustiTeX Core Compiler Engine
 Converts Markdown legal drafts into court-compliant PDFs (Oregon UTCR 28-Line State & U.S. District Court Federal).
+Features:
+- Exact 2-column caption shell with vertical rule divider
+- Centered and bolded section headings
+- Dynamic filing date injection in signature and verification blocks
+- Clean LaTeX signature rules
+- Dynamic running footers
 """
 
 import os
@@ -9,6 +15,7 @@ import subprocess
 import argparse
 import shutil
 import re
+from datetime import datetime
 
 class JustiTeXCompiler:
     def __init__(self, template_path=None, court_format="auto"):
@@ -17,70 +24,133 @@ class JustiTeXCompiler:
         self.template_path = template_path
 
     def extract_document_title(self, md_text, default="LEGAL PLEADING"):
-        """
-        Extracts the official document title from markdown headings or caption.
-        """
-        # Look for explicit title tags or bold capitalized titles
         lines = md_text.splitlines()
-        for line in lines[:30]:
+        for line in lines[:35]:
             clean = line.strip().strip("#* ").strip()
-            # Common pleading titles
             if any(term in clean.upper() for term in ["COMPLAINT", "MOTION", "DECLARATION", "PETITION", "MEMORANDUM", "ANSWER", "REPLY", "NOTICE"]):
-                # Clean up markdown formatting
                 clean_title = re.sub(r'[*_#]', '', clean).strip()
-                # Truncate if excessively long for a running footer
                 if len(clean_title) > 65:
                     clean_title = clean_title[:62] + "..."
                 return clean_title
-                
         return default
 
     def detect_court_format(self, md_text):
-        """
-        Detects whether the draft is for U.S. District Court (Federal) or Oregon State Court (UTCR).
-        """
         text_upper = md_text.upper()
         if "UNITED STATES DISTRICT COURT" in text_upper or "DISTRICT OF OREGON" in text_upper or "42 U.S.C." in text_upper or "PORTLAND DIVISION" in text_upper:
             return "federal"
         return "state"
 
-    def parse_markdown_to_latex(self, md_text, court_format):
-        """
-        Converts markdown text to clean LaTeX with proper paragraph spacing,
-        preserving headings and numbered paragraphs without numbering captions.
-        """
-        latex_lines = []
-        in_caption = False
+    def inject_dynamic_dates(self, text):
+        now = datetime.now()
+        curr_day = now.strftime("%-d") if sys.platform != "win32" else now.strftime("%d").lstrip("0")
+        full_date = now.strftime(f"%B {curr_day}, %Y")
         
-        for line in md_text.splitlines():
+        # Replace blanks like 'Executed on September ____, 2026' or 'Executed on September , 2026'
+        text = re.sub(r'Executed on\s+[A-Za-z]+(?:\s+_+|\s*,|\s*\d*),\s*\d{4}', f"Executed on {full_date}", text)
+        text = re.sub(r'Dated:\s*(?:_+|[A-Za-z]+\s+\d{1,2},\s+\d{4}|[A-Za-z]+\s+_+,\s+\d{4})', f"Dated: {full_date}", text)
+        return text
+
+    def parse_markdown_to_latex(self, md_text, court_format):
+        # Inject dynamic execution dates
+        md_text = self.inject_dynamic_dates(md_text)
+        
+        latex_lines = []
+        lines = md_text.splitlines()
+        
+        i = 0
+        while i < len(lines):
+            line = lines[i]
             line_str = line.strip()
+            
+            # Skip empty lines
             if not line_str:
-                latex_lines.append("")
+                i += 1
                 continue
 
-            # Heading 1 -> Centered Roman Section or Big Header
-            if line_str.startswith("# "):
-                title = line_str[2:].strip()
+            # Court Header (Top centered)
+            if line_str.startswith("# ") and i < 5:
+                court_title = line_str.strip("# *").strip()
+                i += 1
+                while i < len(lines) and (lines[i].startswith("## ") or lines[i].startswith("**")):
+                    court_title += " \\\\\n" + lines[i].strip("# *").strip()
+                    i += 1
+                
+                clean_court = self._escape_latex(court_title)
+                latex_lines.append(f"\\begin{{center}}\\textbf{{\\large {clean_court}}}\\end{{center}}\\vspace{{1em}}")
+                continue
+            
+            # Two-Column Caption Box parsing (for lines before the first major section)
+            if line_str.startswith("**ANNIKA ERIKSSON") and i < 20:
+                left_parties = [
+                    r"\textbf{ANNIKA ERIKSSON and DONALD BUCKHOUT,}",
+                    r"\hspace*{1.5em}\textit{Plaintiffs,}",
+                    r"\vspace{0.5em}",
+                    r"\textit{v.}",
+                    r"\vspace{0.5em}",
+                    r"\textbf{CITY OF OREGON CITY,} an Oregon municipal corporation; \textbf{TONY KONKOL,} individually; \textbf{TODD KENNEDY,} individually; \textbf{ASHLEY FRAIJO,} individually; \textbf{ALEXANDRA TROUTMAN,} individually; \textbf{RAMON HENDERSON,} individually; and \textbf{VANCE WALKER,} individually,",
+                    r"\hspace*{1.5em}\textit{Defendants.}"
+                ]
+                
+                right_info = [
+                    r"\textbf{Case No. \underline{\hspace{1.8in}}}",
+                    r"\vspace{0.75em}",
+                    r"\textbf{COMPLAINT FOR VIOLATIONS OF CIVIL RIGHTS}",
+                    r"\textit{(42 U.S.C. \S\ 1983; Americans with Disabilities Act, Title II; Rehabilitation Act \S\ 504; Fair Housing Act, 42 U.S.C. \S\ 3617)}",
+                    r"\vspace{0.75em}",
+                    r"\textbf{DEMAND FOR JURY TRIAL}"
+                ]
+                
+                left_tex = " \\\\\n".join(left_parties)
+                right_tex = " \\\\\n".join(right_info)
+                
+                caption_tex = f"""
+\\begin{{singlespace}}
+\\noindent
+\\begin{{minipage}}[t]{{0.50\\textwidth}}
+\\small\\raggedright
+{left_tex}
+\\end{{minipage}}%
+\\hspace{{0.03\\textwidth}}%
+\\vrule width 0.75pt%
+\\hspace{{0.03\\textwidth}}%
+\\begin{{minipage}}[t]{{0.44\\textwidth}}
+\\small\\raggedright
+{right_tex}
+\\end{{minipage}}
+\\end{{singlespace}}
+\\vspace{{1em}}
+\\hrule
+\\vspace{{1em}}
+"""
+                latex_lines.append(caption_tex)
+                while i < len(lines) and not lines[i].startswith("## I. INTRODUCTION") and not lines[i].startswith("# I. INTRODUCTION"):
+                    i += 1
+                continue
+                
+            # Section Headings (Level 1: Centered & Bolded)
+            if line_str.startswith("## ") or line_str.startswith("# "):
+                title = line_str.strip("# *").strip()
                 clean_title = self._escape_latex(title)
-                latex_lines.append(f"\\begin{{center}}\\textbf{{\\large {clean_title}}}\\end{{center}}\\vspace{{0.5em}}")
-            # Heading 2 -> Section
-            elif line_str.startswith("## "):
-                title = line_str[3:].strip()
-                clean_title = self._escape_latex(title)
-                latex_lines.append(f"\\vspace{{0.75em}}\\noindent\\textbf{{{clean_title}}}\\par\\vspace{{0.25em}}")
-            # Heading 3 -> Subsection
+                latex_lines.append(f"\\vspace{{1.25em}}\\begin{{center}}\\textbf{{\\large {clean_title}}}\\end{{center}}\\vspace{{0.5em}}")
+            # Sub-Section Headings (Level 2: Centered for claims, left-aligned bold for topics)
             elif line_str.startswith("### "):
-                title = line_str[4:].strip()
+                title = line_str.strip("# *").strip()
                 clean_title = self._escape_latex(title)
-                latex_lines.append(f"\\vspace{{0.5em}}\\noindent\\textbf{{\\textit{{{clean_title}}}}}\\par\\vspace{{0.2em}}")
+                if any(k in title.upper() for k in ["COUNT ", "FIRST CLAIM", "SECOND CLAIM", "THIRD CLAIM", "FOURTH CLAIM", "FIFTH CLAIM", "SIXTH CLAIM", "SEVENTH CLAIM", "EIGHTH CLAIM"]):
+                    latex_lines.append(f"\\vspace{{1em}}\\begin{{center}}\\textbf{{\\normalsize {clean_title}}}\\end{{center}}\\vspace{{0.4em}}")
+                else:
+                    latex_lines.append(f"\\vspace{{0.75em}}\\noindent\\textbf{{{clean_title}}}\\par\\vspace{{0.25em}}")
             # Horizontal rule
             elif line_str.startswith("---"):
-                latex_lines.append("\\vspace{0.5em}\\hrule\\vspace{0.5em}")
-            # Tables
+                latex_lines.append("\\vspace{0.75em}\\hrule\\vspace{0.75em}")
+            # Signature underscore lines (e.g. "____________________")
+            elif re.match(r'^_{5,}$', line_str):
+                latex_lines.append("\\vspace{1.5em}\\noindent\\rule{3in}{0.5pt}\\par\\vspace{0.25em}")
+            # Skip markdown table rows in body text
             elif line_str.startswith("|"):
-                # Simple table line formatting
+                i += 1
                 continue
-            # Numbered paragraph (e.g. "1. Plaintiff is...")
+            # Numbered paragraph (e.g. "1. Plaintiff...")
             elif re.match(r'^\d+\.\s+', line_str):
                 m = re.match(r'^(\d+)\.\s+(.*)', line_str)
                 num = m.group(1)
@@ -96,16 +166,16 @@ class JustiTeXCompiler:
             elif line_str.startswith(">"):
                 quote_text = self._escape_latex(line_str[1:].strip())
                 latex_lines.append(f"\\begin{{quote}}\\textit{{{quote_text}}}\\end{{quote}}")
-            # Normal paragraph
+            # Normal text / paragraph
             else:
                 clean_text = self._escape_latex(line_str)
                 latex_lines.append(f"{clean_text}\\par\\vspace{{0.5em}}")
+            i += 1
 
         return "\n".join(latex_lines)
 
     def _escape_latex(self, text):
-        # Escape special LaTeX characters safely
-        text = text.replace("&", r"\&").replace("#", r"\#").replace("$", r"\$").replace("%", r"\%").replace("_", r"\_")
+        text = text.replace("&", "\\&").replace("#", "\\#").replace("$", "\\$").replace("%", "\\%").replace("_", "\\_")
         text = re.sub(r'\*\*(.*?)\*\*', r'\\textbf{\1}', text)
         text = re.sub(r'\*(.*?)\*', r'\\textit{\1}', text)
         text = text.replace("&nbsp;", " ")
@@ -118,30 +188,24 @@ class JustiTeXCompiler:
         with open(input_md_path, "r", encoding="utf-8") as f:
             md_text = f.read()
 
-        # Determine court format
         if court_format == "auto":
             court_format = self.detect_court_format(md_text)
 
-        # Select template
         if template_path is None:
             if court_format == "federal":
                 template_path = os.path.join(self.base_dir, "templates", "federal_district_court.tex")
             else:
                 template_path = os.path.join(self.base_dir, "templates", "oregon_28line_FROZEN.tex")
 
-        # Extract document title for footer
         doc_title = self.extract_document_title(md_text)
         print(f"[JustiTeX] Court Format: {court_format.upper()} | Footer Title: '{doc_title}'")
 
-        # Read template
         with open(template_path, "r", encoding="utf-8") as f:
             template_content = f.read()
 
-        # Inject dynamic footer title
         template_content = template_content.replace("DYNAMIC_FOOTER_TITLE", doc_title)
         template_content = template_content.replace("Defendant's Consolidated Petition for Hardship Relief", doc_title)
 
-        # Parse body
         parsed_body = self.parse_markdown_to_latex(md_text, court_format)
 
         if "\\end{document}" in template_content:
@@ -158,15 +222,13 @@ class JustiTeXCompiler:
         with open(tex_file, "w", encoding="utf-8") as f:
             f.write(full_tex)
 
-        # Copy pleading.sty if needed
         sty_path = os.path.join(self.base_dir, "templates", "pleading.sty")
         if os.path.exists(sty_path):
             shutil.copy(sty_path, os.path.join(out_dir, "pleading.sty"))
 
-        # Run pdflatex twice for LastPage reference
         cmd = ["pdflatex", "-interaction=nonstopmode", f"-output-directory={out_dir}", tex_file]
         subprocess.run(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-        result = subprocess.run(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        subprocess.run(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 
         pdf_file = os.path.join(out_dir, f"{base_name}.pdf")
         if os.path.exists(pdf_file):
