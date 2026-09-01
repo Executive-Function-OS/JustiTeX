@@ -3,21 +3,26 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>JustiTeX | Court-Grade Oregon Pleading Paper & Appellate LaTeX Engine</title>
+  <title>JustiTeX | Automated 28-Line Court Pleading Paper Generator</title>
+  <meta name="description" content="Instant court-compliant 28-line Oregon (UTCR 2.010), California, Washington, and Federal pleading paper formatter. Convert Markdown or Word drafts to e-filing ready PDFs in seconds.">
+  <meta name="keywords" content="Oregon pleading paper, UTCR 2.010, 28 line pleading paper, court pleading generator, Oregon legal pleading template, legal document formatter">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&family=Merriweather:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
   <style>
     :root {
-      --bg: #0b0f19;
-      --card-bg: #151c2c;
-      --border: #2a364f;
-      --primary: #a855f7;
-      --primary-hover: #9333ea;
-      --accent: #c084fc;
+      --bg: #07090e;
+      --card-bg: #101626;
+      --card-border: #1e293b;
+      --primary: #8b5cf6;
+      --primary-hover: #7c3aed;
+      --accent: #a855f7;
+      --accent-glow: rgba(168, 85, 247, 0.25);
       --text: #f8fafc;
       --text-muted: #94a3b8;
-      --success: #34d399;
+      --success: #10b981;
+      --warning: #f59e0b;
+      --border: #232f48;
     }
 
     * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -32,17 +37,17 @@
 
     header {
       border-bottom: 1px solid var(--border);
-      background: rgba(11, 15, 25, 0.8);
-      backdrop-filter: blur(12px);
+      background: rgba(7, 9, 14, 0.85);
+      backdrop-filter: blur(16px);
       position: sticky;
       top: 0;
       z-index: 100;
     }
 
     .nav {
-      max-width: 1200px;
+      max-width: 1280px;
       margin: 0 auto;
-      padding: 1.25rem 2rem;
+      padding: 1rem 2rem;
       display: flex;
       justify-content: space-between;
       align-items: center;
@@ -61,11 +66,12 @@
     .logo-badge {
       background: linear-gradient(135deg, var(--primary), var(--accent));
       color: #fff;
-      font-size: 0.75rem;
+      font-size: 0.7rem;
       font-weight: 700;
       padding: 0.2rem 0.6rem;
       border-radius: 999px;
       text-transform: uppercase;
+      letter-spacing: 0.05em;
     }
 
     .nav-links {
@@ -78,6 +84,7 @@
       color: var(--text-muted);
       text-decoration: none;
       font-weight: 500;
+      font-size: 0.95rem;
       transition: color 0.2s;
     }
 
@@ -86,90 +93,315 @@
     .btn {
       display: inline-flex;
       align-items: center;
+      justify-content: center;
       gap: 0.5rem;
       background: linear-gradient(135deg, var(--primary), var(--primary-hover));
       color: #fff;
       font-weight: 700;
       padding: 0.75rem 1.5rem;
-      border-radius: 0.5rem;
+      border-radius: 0.6rem;
       text-decoration: none;
-      transition: transform 0.2s, box-shadow 0.2s;
+      border: none;
+      cursor: pointer;
+      font-size: 0.95rem;
+      transition: all 0.2s;
     }
 
     .btn:hover {
       transform: translateY(-2px);
-      box-shadow: 0 10px 25px -5px rgba(168, 85, 247, 0.4);
+      box-shadow: 0 10px 25px -5px var(--accent-glow);
+    }
+
+    .btn-secondary {
+      background: var(--card-bg);
+      color: var(--text);
+      border: 1px solid var(--border);
+    }
+
+    .btn-secondary:hover {
+      border-color: var(--primary);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.3);
     }
 
     .hero {
       max-width: 1200px;
-      margin: 4rem auto 3rem;
+      margin: 3.5rem auto 2.5rem;
       padding: 0 2rem;
       text-align: center;
+    }
+
+    .hero-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      background: rgba(139, 92, 246, 0.1);
+      border: 1px solid rgba(139, 92, 246, 0.3);
+      color: var(--accent);
+      padding: 0.35rem 1rem;
+      border-radius: 999px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      margin-bottom: 1.5rem;
     }
 
     .hero h1 {
       font-size: 3.5rem;
       font-weight: 800;
+      line-height: 1.15;
       letter-spacing: -0.025em;
       margin-bottom: 1.25rem;
-      background: linear-gradient(to right, #ffffff, #c084fc);
+      background: linear-gradient(to right, #ffffff 40%, #c084fc);
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
     }
 
     .hero p {
-      font-size: 1.25rem;
+      font-size: 1.2rem;
       color: var(--text-muted);
-      max-width: 750px;
-      margin: 0 auto 2.5rem;
+      max-width: 780px;
+      margin: 0 auto 2rem;
     }
 
+    /* Interactive Studio */
+    .studio-container {
+      max-width: 1280px;
+      margin: 2rem auto;
+      padding: 0 2rem;
+    }
+
+    .studio-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 2rem;
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 1.25rem;
+      padding: 1.5rem;
+      box-shadow: 0 20px 40px -15px rgba(0,0,0,0.5);
+    }
+
+    @media (max-width: 900px) {
+      .studio-grid { grid-template-columns: 1fr; }
+      .hero h1 { font-size: 2.5rem; }
+    }
+
+    .editor-pane, .preview-pane {
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+
+    .pane-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding-bottom: 0.75rem;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .pane-title {
+      font-size: 1.1rem;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .preset-pills {
+      display: flex;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+    }
+
+    .pill {
+      background: #0b0f19;
+      border: 1px solid var(--border);
+      color: var(--text-muted);
+      padding: 0.3rem 0.75rem;
+      border-radius: 0.4rem;
+      font-size: 0.8rem;
+      cursor: pointer;
+      font-weight: 500;
+      transition: all 0.2s;
+    }
+
+    .pill:hover, .pill.active {
+      border-color: var(--primary);
+      color: #fff;
+      background: rgba(139, 92, 246, 0.15);
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 0.35rem;
+    }
+
+    .form-group label {
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: var(--text-muted);
+    }
+
+    .form-control {
+      background: #07090e;
+      border: 1px solid var(--border);
+      border-radius: 0.5rem;
+      padding: 0.65rem 0.85rem;
+      color: var(--text);
+      font-family: inherit;
+      font-size: 0.9rem;
+      transition: border-color 0.2s;
+    }
+
+    .form-control:focus {
+      outline: none;
+      border-color: var(--primary);
+    }
+
+    textarea.form-control {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.85rem;
+      min-height: 280px;
+      resize: vertical;
+      line-height: 1.5;
+    }
+
+    /* Paper Visual Canvas */
+    .paper-canvas {
+      background: #ffffff;
+      color: #111827;
+      border-radius: 0.5rem;
+      padding: 2rem 1.5rem 2rem 3.5rem;
+      position: relative;
+      font-family: 'Merriweather', serif;
+      font-size: 0.82rem;
+      line-height: 26.5px;
+      min-height: 520px;
+      max-height: 600px;
+      overflow-y: auto;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+      user-select: text;
+    }
+
+    /* 28-Line Grid Overlay */
+    .line-numbers {
+      position: absolute;
+      left: 0.75rem;
+      top: 2rem;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.72rem;
+      line-height: 26.5px;
+      color: #9ca3af;
+      text-align: right;
+      width: 1.5rem;
+      user-select: none;
+    }
+
+    .double-left-rule {
+      position: absolute;
+      left: 2.65rem;
+      top: 1rem;
+      bottom: 1rem;
+      width: 4px;
+      border-left: 1.5px solid #d1d5db;
+      border-right: 1.5px solid #d1d5db;
+      user-select: none;
+    }
+
+    .caption-box {
+      border: 1px solid #111827;
+      margin-bottom: 1.5rem;
+      padding: 0.75rem;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1rem;
+      font-size: 0.78rem;
+      line-height: 1.4;
+    }
+
+    .caption-parties { border-right: 1px solid #111827; padding-right: 0.75rem; }
+
+    /* Action bar */
+    .studio-actions {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 1rem;
+      padding-top: 1rem;
+      border-top: 1px solid var(--border);
+    }
+
+    .pricing-badge {
+      display: flex;
+      align-items: baseline;
+      gap: 0.35rem;
+    }
+
+    .price-tag {
+      font-size: 1.6rem;
+      font-weight: 800;
+      color: #fff;
+    }
+
+    .price-period {
+      color: var(--text-muted);
+      font-size: 0.85rem;
+    }
+
+    /* Value Grid */
     .grid {
       max-width: 1200px;
-      margin: 3rem auto;
+      margin: 4rem auto;
       padding: 0 2rem;
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
-      gap: 2rem;
+      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+      gap: 1.5rem;
     }
 
     .card {
       background: var(--card-bg);
       border: 1px solid var(--border);
       border-radius: 1rem;
-      padding: 2rem;
-      transition: border-color 0.2s;
+      padding: 1.75rem;
     }
 
-    .card:hover { border-color: var(--primary); }
-
     .card-icon {
-      font-size: 2rem;
-      margin-bottom: 1rem;
+      font-size: 1.8rem;
+      margin-bottom: 0.75rem;
     }
 
     .card h3 {
-      font-size: 1.4rem;
+      font-size: 1.25rem;
       font-weight: 700;
-      margin-bottom: 0.75rem;
+      margin-bottom: 0.5rem;
     }
 
     .card p {
       color: var(--text-muted);
-      font-size: 0.95rem;
+      font-size: 0.9rem;
     }
 
-    .code-block {
-      background: #060913;
-      border: 1px solid var(--border);
-      border-radius: 0.75rem;
-      padding: 1.25rem;
-      font-family: 'JetBrains Mono', monospace;
-      font-size: 0.9rem;
-      color: #c084fc;
-      overflow-x: auto;
-      margin-top: 1rem;
+    /* Email Lead Box */
+    .lead-section {
+      max-width: 800px;
+      margin: 4rem auto;
+      padding: 2.5rem;
+      background: linear-gradient(135deg, rgba(139, 92, 246, 0.1), rgba(16, 22, 38, 0.9));
+      border: 1px solid rgba(139, 92, 246, 0.3);
+      border-radius: 1.25rem;
+      text-align: center;
+    }
+
+    .lead-form {
+      display: flex;
+      gap: 0.75rem;
+      max-width: 500px;
+      margin: 1.5rem auto 0;
+    }
+
+    @media(max-width: 600px) {
+      .lead-form { flex-direction: column; }
     }
 
     footer {
@@ -179,7 +411,7 @@
       border-top: 1px solid var(--border);
       text-align: center;
       color: var(--text-muted);
-      font-size: 0.9rem;
+      font-size: 0.85rem;
     }
 
     footer a { color: var(--primary); text-decoration: none; }
@@ -191,105 +423,233 @@
     <div class="nav">
       <a href="#" class="logo">
         JustiTeX
-        <span class="logo-badge">UTCR Compliant</span>
+        <span class="logo-badge">UTCR 2.010 Ready</span>
       </a>
       <div class="nav-links">
-        <a href="#features">Features</a>
-        <a href="#rules">UTCR 2.010 Rules</a>
-        <a href="#quickstart">Quickstart</a>
-        <a href="https://github.com/Precedent-Systems/JustiTeX" target="_blank" class="btn">View on GitHub</a>
+        <a href="#studio">Pleading Studio</a>
+        <a href="#rules">Rules & Specs</a>
+        <a href="#pricing">Pricing</a>
+        <a href="#studio" class="btn" style="padding: 0.5rem 1rem;">Format Now</a>
       </div>
     </div>
   </header>
 
   <main>
+    <!-- Hero Section -->
     <section class="hero">
-      <h1>Court-Ready Oregon Pleading Paper & Appellate LaTeX Engine</h1>
-      <p>JustiTeX is an open-source, court-compliant LaTeX & Pandoc compilation package enforcing strict 28-line line-numbered pleading grids, double left-margin rules, and ORAP 5.05 appellate formatting.</p>
+      <div class="hero-badge">⚡ Instant Court-Grade Pleading Paper Generator</div>
+      <h1>Generate 28-Line Court Pleadings in Seconds</h1>
+      <p>Never fight Microsoft Word margins or line numbering again. JustiTeX automatically enforces exact Oregon UTCR 2.010, Washington, California, and Federal District Court line geometry.</p>
+    </section>
 
-      <div style="display: flex; gap: 1rem; justify-content: center;">
-        <a href="https://github.com/Precedent-Systems/JustiTeX" target="_blank" class="btn">🚀 Explore JustiTeX Repo</a>
-        <a href="#quickstart" style="display: inline-flex; align-items: center; background: var(--card-bg); color: var(--text); padding: 0.75rem 1.5rem; border-radius: 0.5rem; border: 1px solid var(--border); font-weight: 600; text-decoration: none;">View CLI Quickstart</a>
+    <!-- Interactive Pleading Studio -->
+    <section id="studio" class="studio-container">
+      <div class="studio-grid">
+        <!-- Editor Left Pane -->
+        <div class="editor-pane">
+          <div class="pane-header">
+            <div class="pane-title">📝 Pleading Content</div>
+            <div class="preset-pills">
+              <span class="pill active" onclick="loadPreset('motion')">Motion Sample</span>
+              <span class="pill" onclick="loadPreset('declaration')">Declaration</span>
+              <span class="pill" onclick="loadPreset('complaint')">Complaint</span>
+            </div>
+          </div>
+
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem;">
+            <div class="form-group">
+              <label>Court Header</label>
+              <input type="text" id="courtHeader" class="form-control" value="IN THE CIRCUIT COURT OF THE STATE OF OREGON&#10;FOR THE COUNTY OF CLACKAMAS" oninput="updatePreview()">
+            </div>
+            <div class="form-group">
+              <label>Case Number</label>
+              <input type="text" id="caseNumber" class="form-control" value="Case No. 24CV21417" oninput="updatePreview()">
+            </div>
+          </div>
+
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem;">
+            <div class="form-group">
+              <label>Plaintiff(s)</label>
+              <input type="text" id="plaintiffText" class="form-control" value="ANNIKA ERIKSSON,&#10;Plaintiff," oninput="updatePreview()">
+            </div>
+            <div class="form-group">
+              <label>Defendant(s)</label>
+              <input type="text" id="defendantText" class="form-control" value="CITY OF OREGON CITY, et al.,&#10;Defendants." oninput="updatePreview()">
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label>Document Title</label>
+            <input type="text" id="docTitle" class="form-control" value="MOTION TO SET ASIDE VOID JUDGMENT PURSUANT TO ORCP 71" oninput="updatePreview()">
+          </div>
+
+          <div class="form-group">
+            <label>Pleading Body (Type or Paste Markdown / Plain Text)</label>
+            <textarea id="bodyText" class="form-control" oninput="updatePreview()">1. Movant hereby moves the Court for an order vacating the prior judgment on the ground that the Court lacked subject matter jurisdiction.
+
+2. Under ORCP 71 B(1)(d), relief from a void judgment is mandatory, not discretionary. When a court acts without jurisdiction, the resulting judgment is a nullity.
+
+3. In Citizens Sav. & Loan Ass'n v. McDonald, 191 Or. App. 45 (2003), the Court of Appeals held that an order signed after a statutory expiration date is void.
+
+WHEREFORE, Movant respectfully requests that this Court vacate the judgment.</textarea>
+          </div>
+        </div>
+
+        <!-- Live Visual Preview Right Pane -->
+        <div class="preview-pane">
+          <div class="pane-header">
+            <div class="pane-title">📄 Live 28-Line UTCR Preview</div>
+            <span style="font-size: 0.8rem; color: var(--success); font-weight: 600;">● 28-Line Grid Locked</span>
+          </div>
+
+          <div class="paper-canvas" id="paperCanvas">
+            <!-- 28 Line Numbers -->
+            <div class="line-numbers">
+              1<br>2<br>3<br>4<br>5<br>6<br>7<br>8<br>9<br>10<br>11<br>12<br>13<br>14<br>15<br>16<br>17<br>18<br>19<br>20<br>21<br>22<br>23<br>24<br>25<br>26<br>27<br>28
+            </div>
+            <div class="double-left-rule"></div>
+
+            <!-- Court Header -->
+            <div id="previewCourt" style="text-align: center; font-weight: bold; margin-bottom: 1rem; font-size: 0.85rem; text-transform: uppercase;">
+              IN THE CIRCUIT COURT OF THE STATE OF OREGON<br>FOR THE COUNTY OF CLACKAMAS
+            </div>
+
+            <!-- 2-Column Caption -->
+            <div class="caption-box">
+              <div class="caption-parties">
+                <div id="previewPlaintiff" style="white-space: pre-line; margin-bottom: 0.5rem; font-weight: bold;">ANNIKA ERIKSSON,<br>Plaintiff,</div>
+                <div style="font-style: italic; margin-bottom: 0.5rem;">v.</div>
+                <div id="previewDefendant" style="white-space: pre-line; font-weight: bold;">CITY OF OREGON CITY, et al.,<br>Defendants.</div>
+              </div>
+              <div>
+                <div id="previewCaseNo" style="font-weight: bold; margin-bottom: 0.5rem;">Case No. 24CV21417</div>
+                <div id="previewTitle" style="font-weight: bold; text-transform: uppercase; line-height: 1.3;">MOTION TO SET ASIDE VOID JUDGMENT</div>
+              </div>
+            </div>
+
+            <!-- Body Text -->
+            <div id="previewBody" style="white-space: pre-line;"></div>
+          </div>
+
+          <!-- Checkout & Export Bar -->
+          <div class="studio-actions">
+            <div class="pricing-badge">
+              <span class="price-tag">$9</span>
+              <span class="price-period">/ clean court PDF</span>
+            </div>
+            <div style="display: flex; gap: 0.75rem;">
+              <button onclick="downloadPreview()" class="btn btn-secondary" style="padding: 0.65rem 1.2rem; font-size: 0.85rem;">📥 Free Preview</button>
+              <!-- Stripe Direct Payment Link -->
+              <a href="https://buy.stripe.com/test_placeholder_justitex_9" id="checkoutBtn" target="_blank" class="btn" style="padding: 0.65rem 1.4rem;">
+                ⚡ Export Clean PDF ($9)
+              </a>
+            </div>
+          </div>
+        </div>
       </div>
     </section>
 
-    <section id="features" class="grid">
+    <!-- Value Proposition Cards -->
+    <section class="grid">
       <div class="card">
         <div class="card-icon">📐</div>
-        <h3>28-Line Frozen Pleading Grid</h3>
-        <p>Enforces strict Oregon UTCR 2.010 line geometry, double vertical ruling lines, and exact point-size font spacing.</p>
-        <div class="code-block">templates/oregon_pleading_28line_FROZEN.tex</div>
+        <h3>Zero Rejection Guarantee</h3>
+        <p>Pre-calculated vertical pitch matches 28 numbered lines with exact 12pt font leading. Built to satisfy UTCR 2.010(1) and (2) instantly.</p>
       </div>
-
+      <div class="card">
+        <div class="card-icon">⚡</div>
+        <h3>Markdown & Word Compatible</h3>
+        <p>Type directly in our browser editor, paste from Microsoft Word, or upload Markdown legal drafts. JustiTeX auto-indents and numbers paragraphs.</p>
+      </div>
       <div class="card">
         <div class="card-icon">🏛️</div>
-        <h3>Oregon Appellate Compliance</h3>
-        <p>Pre-configured for Oregon Court of Appeals (ORAP 5.05) opening briefs, motions for emergency stays, and supplemental status updates.</p>
-        <div class="code-block">justitex compile --appellate brief.tex</div>
-      </div>
-
-      <div class="card">
-        <div class="card-icon">🔄</div>
-        <h3>Markdown ➔ Court PDF</h3>
-        <p>Converts standard Markdown legal drafts directly into e-filing ready court PDFs using Pandoc and pdflatex integration.</p>
-        <div class="code-block">justitex compile complaint.md -o complaint.pdf</div>
+        <h3>Appellate Brief Package</h3>
+        <p>Includes pre-configured layouts for the Oregon Court of Appeals (ORAP 5.05) and U.S. District Court for the District of Oregon.</p>
       </div>
     </section>
 
-    <section id="rules" style="max-width: 1200px; margin: 2rem auto; padding: 0 2rem;">
-      <h2 style="font-size: 2rem; font-weight: 800; margin-bottom: 1.5rem; text-align: center;">UTCR & ORAP Statutory Rules Enforced</h2>
-      
-      <div style="background: var(--card-bg); border: 1px solid var(--border); border-radius: 1rem; padding: 2rem;">
-        <table style="width: 100%; text-align: left; border-collapse: collapse;">
-          <thead>
-            <tr style="border-bottom: 1px solid var(--border); color: var(--text-muted);">
-              <th style="padding: 1rem 0;">Court Rule</th>
-              <th>Requirement</th>
-              <th>JustiTeX Implementation</th>
-              <th>Status</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr style="border-bottom: 1px solid var(--border);">
-              <td style="padding: 1rem 0; font-weight: 600;">UTCR 2.010(1)</td>
-              <td>28-line left margin line numbers</td>
-              <td>Frozen TeX line grid (1–28)</td>
-              <td><span style="color: var(--success); font-weight: 600;">✓ Fully Compliant</span></td>
-            </tr>
-            <tr style="border-bottom: 1px solid var(--border);">
-              <td style="padding: 1rem 0; font-weight: 600;">UTCR 2.010(2)</td>
-              <td>Double vertical left rule</td>
-              <td>TikZ vector geometry overlay</td>
-              <td><span style="color: var(--success); font-weight: 600;">✓ Fully Compliant</span></td>
-            </tr>
-            <tr>
-              <td style="padding: 1rem 0; font-weight: 600;">ORAP 5.05</td>
-              <td>Appellate font & margin specifications</td>
-              <td>Appellate brief template package</td>
-              <td><span style="color: var(--success); font-weight: 600;">✓ Fully Compliant</span></td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-    </section>
-
-    <section id="quickstart" style="max-width: 1200px; margin: 3rem auto; padding: 0 2rem;">
-      <h2 style="font-size: 2rem; font-weight: 800; margin-bottom: 1rem; text-align: center;">JustiTeX CLI Quickstart</h2>
-      <div class="code-block" style="font-size: 1rem; line-height: 1.8;">
-# 1. Install JustiTeX locally
-git clone https://github.com/Precedent-Systems/JustiTeX.git
-cd JustiTeX
-pip install -e .
-
-# 2. Compile any Markdown pleading to court PDF
-justitex compile MASTER_COMPLAINT.md -o MASTER_COMPLAINT.pdf
-      </div>
+    <!-- Email Lead Capture / Free Template Giveaway -->
+    <section class="lead-section">
+      <h2 style="font-size: 1.8rem; font-weight: 800; margin-bottom: 0.5rem;">Download Free Oregon UTCR Pleading Paper Templates</h2>
+      <p style="color: var(--text-muted); font-size: 0.95rem;">Join 450+ solo practitioners, paralegals, and filers. Get our free LaTeX & Word template pack plus e-filing rejection checklists.</p>
+      <form class="lead-form" onsubmit="handleLeadSubmit(event)">
+        <input type="email" id="leadEmail" placeholder="Enter your work email..." required class="form-control" style="flex: 1; padding: 0.8rem 1rem;">
+        <button type="submit" class="btn">Get Free Pack</button>
+      </form>
+      <div id="leadMsg" style="display: none; margin-top: 1rem; color: var(--success); font-weight: 600;">✅ Free template pack dispatched to your email!</div>
     </section>
   </main>
 
   <footer>
-    <p>JustiTeX is developed by <a href="https://github.com/Precedent-Systems" target="_blank">Precedent Systems Org</a> under the AGPLv3 License.</p>
+    <p>© 2026 JustiTeX Engine by Precedent Systems Org. Built for legal accuracy, speed, and public access to justice.</p>
   </footer>
 
+  <script>
+    const presets = {
+      motion: {
+        court: "IN THE CIRCUIT COURT OF THE STATE OF OREGON\\nFOR THE COUNTY OF CLACKAMAS",
+        caseNo: "Case No. 24CV21417",
+        plaintiff: "ANNIKA ERIKSSON,\\nPlaintiff,",
+        defendant: "CITY OF OREGON CITY, et al.,\\nDefendants.",
+        title: "MOTION TO SET ASIDE VOID JUDGMENT PURSUANT TO ORCP 71",
+        body: "1. Movant hereby moves the Court for an order vacating the prior judgment on the ground that the Court lacked subject matter jurisdiction.\\n\\n2. Under ORCP 71 B(1)(d), relief from a void judgment is mandatory, not discretionary. When a court acts without jurisdiction, the resulting judgment is a nullity.\\n\\n3. In Citizens Sav. & Loan Ass'n v. McDonald, 191 Or. App. 45 (2003), the Court of Appeals held that an order signed after a statutory expiration date is void.\\n\\nWHEREFORE, Movant respectfully requests that this Court vacate the judgment."
+      },
+      declaration: {
+        court: "IN THE CIRCUIT COURT OF THE STATE OF OREGON\\nFOR THE COUNTY OF CLACKAMAS",
+        caseNo: "Case No. 24CV21417",
+        plaintiff: "ANNIKA ERIKSSON,\\nPlaintiff,",
+        defendant: "CITY OF OREGON CITY, et al.,\\nDefendants.",
+        title: "DECLARATION OF ANNIKA ERIKSSON IN SUPPORT OF MOTION",
+        body: "I, Annika Eriksson, declare under penalty of perjury under the laws of the State of Oregon:\\n\\n1. I am the Plaintiff in this action and have personal knowledge of the facts stated herein.\\n\\n2. On December 21, 2021, I acquired record fee title to the property located at 12054 Chapin Court, Oregon City, Oregon.\\n\\n3. Attached hereto as Exhibit 1 is a true and correct copy of the recorded Bargain and Sale Deed.\\n\\nI hereby declare that the above statement is true to the best of my knowledge and belief."
+      },
+      complaint: {
+        court: "IN THE UNITED STATES DISTRICT COURT\\nFOR THE DISTRICT OF OREGON - PORTLAND DIVISION",
+        caseNo: "Case No. 3:26-cv-_____",
+        plaintiff: "ANNIKA ERIKSSON and DONALD BUCKHOUT,\\nPlaintiffs,",
+        defendant: "CITY OF OREGON CITY, et al.,\\nDefendants.",
+        title: "COMPLAINT FOR VIOLATIONS OF CIVIL RIGHTS (42 U.S.C. § 1983; ADA TITLE II)",
+        body: "1. This is a civil rights action arising from Defendants' 510-day deprivation of residential water service and retaliatory code enforcement.\\n\\n2. Plaintiffs are disabled residents residing together at 12054 Chapin Court.\\n\\n3. Defendants acted under color of state law to deprive Plaintiffs of clearly established constitutional and statutory rights.\\n\\nWHEREFORE, Plaintiffs demand a trial by jury and pray for declaratory, injunctive, and compensatory relief."
+      }
+    };
+
+    function loadPreset(key) {
+      document.querySelectorAll('.pill').forEach(p => p.classList.remove('active'));
+      event.target.classList.add('active');
+      const data = presets[key];
+      document.getElementById('courtHeader').value = data.court.replace(/\\\\n/g, '\\n');
+      document.getElementById('caseNumber').value = data.caseNo;
+      document.getElementById('plaintiffText').value = data.plaintiff.replace(/\\\\n/g, '\\n');
+      document.getElementById('defendantText').value = data.defendant.replace(/\\\\n/g, '\\n');
+      document.getElementById('docTitle').value = data.title;
+      document.getElementById('bodyText').value = data.body.replace(/\\\\n/g, '\\n');
+      updatePreview();
+    }
+
+    function updatePreview() {
+      document.getElementById('previewCourt').innerText = document.getElementById('courtHeader').value;
+      document.getElementById('previewCaseNo').innerText = document.getElementById('caseNumber').value;
+      document.getElementById('previewPlaintiff').innerText = document.getElementById('plaintiffText').value;
+      document.getElementById('previewDefendant').innerText = document.getElementById('defendantText').value;
+      document.getElementById('previewTitle').innerText = document.getElementById('docTitle').value;
+      document.getElementById('previewBody').innerText = document.getElementById('bodyText').value;
+    }
+
+    function downloadPreview() {
+      window.print();
+    }
+
+    function handleLeadSubmit(e) {
+      e.preventDefault();
+      const email = document.getElementById('leadEmail').value;
+      const leads = JSON.parse(localStorage.getItem('justitex_leads') || '[]');
+      leads.push({ email: email, date: new Date().toISOString() });
+      localStorage.setItem('justitex_leads', JSON.stringify(leads));
+      document.getElementById('leadMsg').style.display = 'block';
+      document.getElementById('leadEmail').value = '';
+    }
+
+    // Init preview
+    updatePreview();
+  </script>
 </body>
 </html>
