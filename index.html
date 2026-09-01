@@ -529,6 +529,11 @@ WHEREFORE, Movant respectfully requests that this Court vacate the judgment.</te
 
             <!-- Body Text -->
             <div id="previewBody" style="white-space: pre-line;"></div>
+
+            <!-- Dynamic Court Footer -->
+            <div id="previewFooter" style="margin-top: 1.5rem; border-top: 1px solid #d1d5db; padding-top: 0.5rem; font-size: 0.72rem; color: #4b5563; font-family: 'Inter', sans-serif;">
+              Page 1 of 1 -- MOTION TO SET ASIDE VOID JUDGMENT PURSUANT TO ORCP 71
+            </div>
           </div>
 
           <!-- Checkout & Export Bar -->
@@ -563,8 +568,8 @@ WHEREFORE, Movant respectfully requests that this Court vacate the judgment.</te
       </div>
       <div class="card">
         <div class="card-icon">🏛️</div>
-        <h3>Appellate Brief Package</h3>
-        <p>Includes pre-configured layouts for the Oregon Court of Appeals (ORAP 5.05) and U.S. District Court for the District of Oregon.</p>
+        <h3>Federal & State Templates</h3>
+        <p>Includes pre-configured layouts for U.S. District Court (Federal LR 10), Oregon Court of Appeals (ORAP 5.05), and Oregon Circuit Courts.</p>
       </div>
     </section>
 
@@ -626,12 +631,14 @@ WHEREFORE, Movant respectfully requests that this Court vacate the judgment.</te
     }
 
     function updatePreview() {
+      const title = document.getElementById('docTitle').value || 'LEGAL PLEADING';
       document.getElementById('previewCourt').innerText = document.getElementById('courtHeader').value;
       document.getElementById('previewCaseNo').innerText = document.getElementById('caseNumber').value;
       document.getElementById('previewPlaintiff').innerText = document.getElementById('plaintiffText').value;
       document.getElementById('previewDefendant').innerText = document.getElementById('defendantText').value;
-      document.getElementById('previewTitle').innerText = document.getElementById('docTitle').value;
+      document.getElementById('previewTitle').innerText = title;
       document.getElementById('previewBody').innerText = document.getElementById('bodyText').value;
+      document.getElementById('previewFooter').innerText = `Page 1 of 1 -- ${title}`;
     }
 
     function downloadPreview() {
