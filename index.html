@@ -1,0 +1,683 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>JustiTeX | Open-Source 28-Line Court Pleading Paper Generator (Beta)</title>
+  <meta name="description" content="Open-source 28-line court pleading paper generator (UTCR 2.010 & FRCP compliant). Free templates for pro se litigants, legal aid clinics, and advocates.">
+  <meta name="keywords" content="Oregon pleading paper, UTCR 2.010, 28 line pleading paper, court pleading generator, Oregon legal pleading template, legal document formatter, access to justice">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&family=Merriweather:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #07090e;
+      --card-bg: #101626;
+      --card-border: #1e293b;
+      --primary: #8b5cf6;
+      --primary-hover: #7c3aed;
+      --accent: #a855f7;
+      --accent-glow: rgba(168, 85, 247, 0.25);
+      --text: #f8fafc;
+      --text-muted: #94a3b8;
+      --success: #10b981;
+      --warning: #f59e0b;
+      --border: #232f48;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background-color: var(--bg);
+      color: var(--text);
+      line-height: 1.6;
+      padding-bottom: 4rem;
+    }
+
+    header {
+      border-bottom: 1px solid var(--border);
+      background: rgba(7, 9, 14, 0.85);
+      backdrop-filter: blur(16px);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+
+    .nav {
+      max-width: 1280px;
+      margin: 0 auto;
+      padding: 1rem 2rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      font-size: 1.4rem;
+      font-weight: 800;
+      color: var(--text);
+      text-decoration: none;
+    }
+
+    .logo-badge {
+      background: linear-gradient(135deg, var(--primary), var(--accent));
+      color: #fff;
+      font-size: 0.7rem;
+      font-weight: 700;
+      padding: 0.2rem 0.6rem;
+      border-radius: 999px;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .nav-links {
+      display: flex;
+      gap: 1.5rem;
+      align-items: center;
+    }
+
+    .nav-links a {
+      color: var(--text-muted);
+      text-decoration: none;
+      font-weight: 500;
+      font-size: 0.95rem;
+      transition: color 0.2s;
+    }
+
+    .nav-links a:hover { color: var(--primary); }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+      background: linear-gradient(135deg, var(--primary), var(--primary-hover));
+      color: #fff;
+      font-weight: 700;
+      padding: 0.75rem 1.5rem;
+      border-radius: 0.6rem;
+      text-decoration: none;
+      border: none;
+      cursor: pointer;
+      font-size: 0.95rem;
+      transition: all 0.2s;
+    }
+
+    .btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 10px 25px -5px var(--accent-glow);
+    }
+
+    .btn-secondary {
+      background: var(--card-bg);
+      color: var(--text);
+      border: 1px solid var(--border);
+    }
+
+    .btn-secondary:hover {
+      border-color: var(--primary);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+    }
+
+    .hero {
+      max-width: 1200px;
+      margin: 3rem auto 2rem;
+      padding: 0 2rem;
+      text-align: center;
+    }
+
+    .hero-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      background: rgba(139, 92, 246, 0.1);
+      border: 1px solid rgba(139, 92, 246, 0.3);
+      color: var(--accent);
+      padding: 0.35rem 1rem;
+      border-radius: 999px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      margin-bottom: 1.5rem;
+    }
+
+    .hero h1 {
+      font-size: 3.2rem;
+      font-weight: 800;
+      line-height: 1.15;
+      letter-spacing: -0.025em;
+      margin-bottom: 1.25rem;
+      background: linear-gradient(to right, #ffffff 40%, #c084fc);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .hero p {
+      font-size: 1.15rem;
+      color: var(--text-muted);
+      max-width: 780px;
+      margin: 0 auto 2rem;
+    }
+
+    /* Interactive Studio */
+    .studio-container {
+      max-width: 1280px;
+      margin: 2rem auto;
+      padding: 0 2rem;
+    }
+
+    .studio-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 2rem;
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 1.25rem;
+      padding: 1.5rem;
+      box-shadow: 0 20px 40px -15px rgba(0,0,0,0.5);
+    }
+
+    @media (max-width: 900px) {
+      .studio-grid { grid-template-columns: 1fr; }
+      .hero h1 { font-size: 2.3rem; }
+    }
+
+    .editor-pane, .preview-pane {
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+
+    .pane-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding-bottom: 0.75rem;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .pane-title {
+      font-size: 1.1rem;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .preset-pills {
+      display: flex;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+    }
+
+    .pill {
+      background: #0b0f19;
+      border: 1px solid var(--border);
+      color: var(--text-muted);
+      padding: 0.3rem 0.75rem;
+      border-radius: 0.4rem;
+      font-size: 0.8rem;
+      cursor: pointer;
+      font-weight: 500;
+      transition: all 0.2s;
+    }
+
+    .pill:hover, .pill.active {
+      border-color: var(--primary);
+      color: #fff;
+      background: rgba(139, 92, 246, 0.15);
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 0.35rem;
+    }
+
+    .form-group label {
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: var(--text-muted);
+    }
+
+    .form-control {
+      background: #07090e;
+      border: 1px solid var(--border);
+      border-radius: 0.5rem;
+      padding: 0.65rem 0.85rem;
+      color: var(--text);
+      font-family: inherit;
+      font-size: 0.9rem;
+      transition: border-color 0.2s;
+    }
+
+    .form-control:focus {
+      outline: none;
+      border-color: var(--primary);
+      box-shadow: 0 0 0 2px var(--accent-glow);
+    }
+
+    textarea.form-control {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.85rem;
+      line-height: 1.5;
+      resize: vertical;
+    }
+
+    /* Pleading Paper Preview Mockup */
+    .paper-canvas {
+      background: #ffffff;
+      color: #111827;
+      border-radius: 0.5rem;
+      padding: 2.5rem 2rem 2rem 3.5rem;
+      font-family: 'Merriweather', serif;
+      font-size: 0.82rem;
+      line-height: 1.8;
+      position: relative;
+      min-height: 620px;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+      border: 1px solid #cbd5e1;
+    }
+
+    .line-numbers {
+      position: absolute;
+      left: 1.2rem;
+      top: 2.5rem;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.72rem;
+      line-height: 1.8;
+      color: #94a3b8;
+      user-select: none;
+      text-align: right;
+      width: 1.2rem;
+    }
+
+    .double-left-rule {
+      position: absolute;
+      left: 2.8rem;
+      top: 2.5rem;
+      bottom: 2rem;
+      width: 4px;
+      border-left: 1px solid #94a3b8;
+      border-right: 1px solid #94a3b8;
+    }
+
+    .caption-box {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      border-bottom: 1px solid #111827;
+      padding-bottom: 0.75rem;
+      margin-bottom: 1rem;
+      font-size: 0.8rem;
+      line-height: 1.4;
+    }
+
+    .caption-parties {
+      border-right: 1px solid #111827;
+      padding-right: 0.75rem;
+    }
+
+    .studio-actions {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 1rem;
+      padding-top: 1rem;
+      border-top: 1px solid var(--border);
+    }
+
+    /* Feature Grid */
+    .grid {
+      max-width: 1200px;
+      margin: 3.5rem auto;
+      padding: 0 2rem;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+      gap: 1.5rem;
+    }
+
+    .card {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 1rem;
+      padding: 1.75rem;
+      transition: all 0.2s;
+    }
+
+    .card:hover {
+      border-color: var(--primary);
+      transform: translateY(-2px);
+    }
+
+    .card-icon {
+      font-size: 2rem;
+      margin-bottom: 1rem;
+    }
+
+    .card h3 {
+      font-size: 1.2rem;
+      font-weight: 700;
+      margin-bottom: 0.5rem;
+    }
+
+    .card p {
+      color: var(--text-muted);
+      font-size: 0.95rem;
+      line-height: 1.5;
+    }
+
+    /* Lead Section */
+    .lead-section {
+      max-width: 800px;
+      margin: 4rem auto;
+      padding: 2.5rem;
+      background: linear-gradient(180deg, rgba(139, 92, 246, 0.08) 0%, rgba(16, 22, 38, 0.6) 100%);
+      border: 1px solid rgba(139, 92, 246, 0.3);
+      border-radius: 1.25rem;
+      text-align: center;
+    }
+
+    footer {
+      max-width: 1200px;
+      margin: 4rem auto 0;
+      padding: 2rem;
+      text-align: center;
+      border-top: 1px solid var(--border);
+      color: var(--text-muted);
+      font-size: 0.85rem;
+    }
+
+    @media print {
+      @page { size: letter; margin: 0.7in 0.65in 0.7in 0.8in; }
+      header, .hero, .studio-actions, .grid, .lead-section, footer, .nav-links, .preset-pills, .editor-pane, .pane-header { display: none !important; }
+      body { background: #fff !important; color: #111 !important; padding: 0 !important; }
+      .studio-container, .studio-grid, .preview-pane { display: block !important; max-width: none !important; margin: 0 !important; padding: 0 !important; border: none !important; background: transparent !important; box-shadow: none !important; }
+      .paper-canvas { box-shadow: none !important; min-height: auto !important; }
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <div class="nav">
+      <a href="#" class="logo">
+        ⚖️ JustiTeX
+        <span class="logo-badge">Open Source Beta</span>
+      </a>
+      <div class="nav-links">
+        <a href="#studio">Pleading Studio</a>
+        <a href="#templates">Template Pack</a>
+        <a href="#philosophy">Access to Justice</a>
+        <a href="#clinic">Clinic $149/yr</a>
+        <a href="https://github.com/Executive-Function-OS/JustiTeX" target="_blank" class="btn btn-secondary" style="padding: 0.5rem 1rem; font-size: 0.85rem;">GitHub</a>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <!-- Hero Header -->
+    <section class="hero">
+      <div class="hero-badge">
+        ✨ Free & Open-Access Legal Typesetting
+      </div>
+      <h1>Pristine 28-Line Court Pleading Paper</h1>
+      <p>An open-source legal document engine built to ensure pro se litigants, legal aid clinics, and community advocates produce courtroom-grade 28-line pleadings without expensive commercial software barriers.</p>
+      <div style="display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap;">
+        <a href="#studio" class="btn">⚡ Open Pleading Studio</a>
+        <a href="https://buy.stripe.com/dRm00cgtQaY20Cf3eS6J201" target="_blank" class="btn" style="background: linear-gradient(135deg, #10b981, #059669); color: #fff; font-weight: 700; box-shadow: 0 4px 14px rgba(16, 185, 129, 0.4);">⭐ Get JustiTeX Pro Pack ($14)</a>
+        <a href="https://github.com/Executive-Function-OS/JustiTeX/tree/main/templates" target="_blank" rel="noreferrer" class="btn btn-secondary">Free basic templates on GitHub</a>
+      </div>
+    </section>
+
+    <!-- Pleading Generator Studio -->
+    <section class="studio-container" id="studio">
+      <div class="studio-grid">
+        
+        <!-- Left: Form Controls -->
+        <div class="editor-pane">
+          <div class="pane-header">
+            <div class="pane-title">✏️ Pleading Parameters</div>
+            <div class="preset-pills">
+              <span class="pill active" onclick="loadPreset('motion')">Motion</span>
+              <span class="pill" onclick="loadPreset('declaration')">Declaration</span>
+              <span class="pill" onclick="loadPreset('complaint')">Federal Complaint</span>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label>Court Heading</label>
+            <input type="text" id="courtHeader" class="form-control" value="IN THE CIRCUIT COURT OF THE STATE OF OREGON&#10;FOR THE COUNTY OF CLACKAMAS" oninput="updatePreview()">
+          </div>
+
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+            <div class="form-group">
+              <label>Plaintiff(s)</label>
+              <textarea id="plaintiffText" rows="2" class="form-control" oninput="updatePreview()">JANE DOE,&#10;Plaintiff,</textarea>
+            </div>
+            <div class="form-group">
+              <label>Defendant(s)</label>
+              <textarea id="defendantText" rows="2" class="form-control" oninput="updatePreview()">ACME ENTERPRISES, INC.,&#10;Defendant.</textarea>
+            </div>
+          </div>
+
+          <div style="display: grid; grid-template-columns: 1fr 1.5fr; gap: 1rem;">
+            <div class="form-group">
+              <label>Case Number</label>
+              <input type="text" id="caseNumber" class="form-control" value="Case No. 26CV12345" oninput="updatePreview()">
+            </div>
+            <div class="form-group">
+              <label>Document Title</label>
+              <input type="text" id="docTitle" class="form-control" value="MOTION FOR EXTENSION OF TIME PURSUANT TO ORCP 15" oninput="updatePreview()">
+            </div>
+          </div>
+
+          <div class="form-group" style="flex: 1;">
+            <label>Pleading Body (Plain Text or Markdown)</label>
+            <textarea id="bodyText" rows="9" class="form-control" oninput="updatePreview()">1. Movant hereby moves the Court for an order extending the deadline to respond to Plaintiff's Complaint by thirty (30) days.
+
+2. Movant shows that good cause exists for the requested extension because counsel was recently retained and requires adequate time to review the underlying records.
+
+3. Opposing counsel was conferred with regarding this request and does not object to a 30-day extension.
+
+WHEREFORE, Movant respectfully requests that this Court grant an extension of time through October 15, 2026.</textarea>
+          </div>
+        </div>
+
+        <!-- Right: Real-time 28-Line Mockup -->
+        <div class="preview-pane">
+          <div class="pane-header">
+            <div class="pane-title">📄 Live 28-Line UTCR Preview</div>
+            <span style="font-size: 0.8rem; color: var(--success); font-weight: 600;">● 28-Line Grid Locked</span>
+          </div>
+
+          <div class="paper-canvas" id="paperCanvas">
+            <!-- 28 Line Numbers -->
+            <div class="line-numbers">
+              1<br>2<br>3<br>4<br>5<br>6<br>7<br>8<br>9<br>10<br>11<br>12<br>13<br>14<br>15<br>16<br>17<br>18<br>19<br>20<br>21<br>22<br>23<br>24<br>25<br>26<br>27<br>28
+            </div>
+            <div class="double-left-rule"></div>
+
+            <!-- Court Header -->
+            <div id="previewCourt" style="text-align: center; font-weight: bold; margin-bottom: 1rem; font-size: 0.85rem; text-transform: uppercase;">
+              IN THE CIRCUIT COURT OF THE STATE OF OREGON<br>FOR THE COUNTY OF CLACKAMAS
+            </div>
+
+            <!-- 2-Column Caption -->
+            <div class="caption-box">
+              <div class="caption-parties">
+                <div id="previewPlaintiff" style="white-space: pre-line; margin-bottom: 0.5rem; font-weight: bold;">JANE DOE,<br>Plaintiff,</div>
+                <div style="font-style: italic; margin-bottom: 0.5rem;">v.</div>
+                <div id="previewDefendant" style="white-space: pre-line; font-weight: bold;">ACME ENTERPRISES, INC.,<br>Defendant.</div>
+              </div>
+              <div>
+                <div id="previewCaseNo" style="font-weight: bold; margin-bottom: 0.5rem;">Case No. 26CV12345</div>
+                <div id="previewTitle" style="font-weight: bold; text-transform: uppercase; line-height: 1.3;">MOTION FOR EXTENSION OF TIME</div>
+              </div>
+            </div>
+
+            <!-- Body Text -->
+            <div id="previewBody" style="white-space: pre-line;"></div>
+
+            <!-- Dynamic Court Footer -->
+            <div id="previewFooter" style="margin-top: 1.5rem; border-top: 1px solid #d1d5db; padding-top: 0.5rem; font-size: 0.72rem; color: #4b5563; font-family: 'Inter', sans-serif;">
+              Page 1 of 1 -- MOTION FOR EXTENSION OF TIME PURSUANT TO ORCP 15
+            </div>
+          </div>
+
+          <!-- Actions Bar -->
+          <div class="studio-actions">
+            <span style="font-size: 0.85rem; color: var(--text-muted);">Open-Source Beta Engine</span>
+            <div style="display: flex; gap: 0.75rem;">
+              <button onclick="downloadPreview()" class="btn btn-secondary" style="padding: 0.65rem 1.2rem; font-size: 0.85rem;">🖨️ Print / Save PDF</button>
+              <a href="https://github.com/Executive-Function-OS/JustiTeX/tree/main/templates" target="_blank" rel="noreferrer" class="btn" style="padding: 0.65rem 1.4rem;">
+                Free templates on GitHub
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Value Proposition Cards -->
+    <section class="grid" id="philosophy">
+      <div class="card">
+        <div class="card-icon">📐</div>
+        <h3>28-Line UTCR 2.010 Compliance</h3>
+        <p>Pre-calculated vertical grid pitch matches 28 numbered lines with exact typography leading, locked left margin rules, and standardized 10.5pt captions.</p>
+      </div>
+      <div class="card">
+        <div class="card-icon">⚡</div>
+        <h3>Plain Text & LaTeX Workflow</h3>
+        <p>Draft simply in Markdown or text. JustiTeX compiles clean, professional pleadings with zero widow/orphan lines and consistent running footers.</p>
+      </div>
+      <div class="card">
+        <div class="card-icon">🏛️</div>
+        <h3>100% Free for Access to Justice</h3>
+        <p>Released under the GNU AGPLv3. Free forever for pro se filers, legal aid organizations, public defenders, and community advocates.</p>
+      </div>
+    </section>
+
+    <!-- Direct Template Download Section -->
+    <section class="lead-section" id="templates">
+      <div style="background: linear-gradient(135deg, rgba(16, 185, 129, 0.1), rgba(5, 150, 105, 0.05)); border: 1px solid rgba(16, 185, 129, 0.3); border-radius: 16px; padding: 2.5rem; max-width: 700px; margin: 0 auto 2rem auto; text-align: center;">
+        <span style="background: #10b981; color: #000; font-size: 0.75rem; font-weight: 800; padding: 0.25rem 0.75rem; border-radius: 999px; text-transform: uppercase;">Most Popular</span>
+        <h2 style="font-size: 2rem; font-weight: 800; margin: 0.75rem 0 0.5rem 0;">JustiTeX Pro Oregon & Federal Pleading Pack</h2>
+        <p style="color: var(--text-muted); font-size: 1rem; margin-bottom: 1.5rem;">Includes 9 court-ready LaTeX templates: 28-Line UTCR 2.010 Pleading, Federal LR 10-1 Pleading, Declarations (ORCP 1 E), Proposed Orders (UTCR 5.100), Certificates of Service, Notices of Appeal (ORAP 2.05), Motions with Conferral, Quickstart Guide & Macro Cheat Sheet.</p>
+        <a href="https://buy.stripe.com/dRm00cgtQaY20Cf3eS6J201" target="_blank" class="btn" style="background: linear-gradient(135deg, #10b981, #059669); color: #fff; font-size: 1.15rem; font-weight: 700; padding: 1rem 2.5rem; box-shadow: 0 4px 20px rgba(16, 185, 129, 0.5); display: inline-block;">
+          ⚡ Instant Download Pro Pack — $14.00
+        </a>
+        <div style="margin-top: 0.75rem; font-size: 0.85rem; color: var(--text-muted);">
+          Instant access via Stripe • After payment, download <a href="JustiTeX_Pro_Oregon_Template_Pack_v2.0.zip" style="color:#6ee7b7;">JustiTeX_Pro_Oregon_Template_Pack_v2.0.zip</a> or open <a href="success.html" style="color:#6ee7b7;">fulfillment</a>
+        </div>
+      </div>
+
+      <div style="margin-top: 1.5rem;">
+        <p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 0.75rem;">Looking for the basic open-access version?</p>
+        <a href="https://github.com/Executive-Function-OS/JustiTeX/tree/main/templates" target="_blank" rel="noreferrer" class="btn btn-secondary" style="font-size: 0.9rem; padding: 0.6rem 1.5rem;">
+          Free basic templates on GitHub
+        </a>
+      </div>
+    </section>
+
+    <section class="lead-section" id="clinic" style="max-width: 920px;">
+      <h2 style="font-size: 1.85rem; font-weight: 800; margin-bottom: 0.5rem;">Clinic license — $149 / year</h2>
+      <p style="color: var(--text-muted); margin-bottom: 1.25rem;">Individual pro se filers stay free. Legal aid clinics, public defender offices, and pro bono shops get shared seats, venue presets, and priority Oregon template updates. This is the seat-license revenue line the $14 Pro pack does not cover.</p>
+      <form id="clinicForm" style="display:grid; gap: 0.75rem; text-align:left;">
+        <div style="display:grid; grid-template-columns: 1fr 1fr; gap: 0.75rem;">
+          <label style="font-size:0.85rem; font-weight:600; color: var(--text-muted);">Organization<input required name="org" class="form-control" placeholder="Legal Aid Services of Oregon"></label>
+          <label style="font-size:0.85rem; font-weight:600; color: var(--text-muted);">Work email<input required type="email" name="email" class="form-control" placeholder="docketing@clinic.org"></label>
+        </div>
+        <div style="display:grid; grid-template-columns: 1fr 1fr; gap: 0.75rem;">
+          <label style="font-size:0.85rem; font-weight:600; color: var(--text-muted);">County / venue<input name="county" class="form-control" value="Clackamas"></label>
+          <label style="font-size:0.85rem; font-weight:600; color: var(--text-muted);">Seats<select name="seats" class="form-control"><option>5</option><option selected>10</option><option>25</option><option>County-wide</option></select></label>
+        </div>
+        <button type="submit" class="btn">Request clinic invoice</button>
+        <p id="clinicStatus" style="font-size:0.85rem; color: var(--success);"></p>
+      </form>
+    </section>
+  </main>
+
+  <footer>
+    <p>© 2026 JustiTeX Engine. Open-source legal document tooling for public access to justice.</p>
+  </footer>
+
+  <script>
+    const presets = {
+      motion: {
+        court: "IN THE CIRCUIT COURT OF THE STATE OF OREGON\\nFOR THE COUNTY OF CLACKAMAS",
+        caseNo: "Case No. 26CV12345",
+        plaintiff: "JANE DOE,\\nPlaintiff,",
+        defendant: "ACME ENTERPRISES, INC.,\\nDefendant.",
+        title: "MOTION FOR EXTENSION OF TIME PURSUANT TO ORCP 15",
+        body: "1. Movant hereby moves the Court for an order extending the deadline to respond to Plaintiff's Complaint by thirty (30) days.\\n\\n2. Movant shows that good cause exists for the requested extension because counsel was recently retained and requires adequate time to review the underlying records.\\n\\n3. Opposing counsel was conferred with regarding this request and does not object to a 30-day extension.\\n\\nWHEREFORE, Movant respectfully requests that this Court grant an extension of time through October 15, 2026."
+      },
+      declaration: {
+        court: "IN THE CIRCUIT COURT OF THE STATE OF OREGON\\nFOR THE COUNTY OF CLACKAMAS",
+        caseNo: "Case No. 26CV12345",
+        plaintiff: "JANE DOE,\\nPlaintiff,",
+        defendant: "ACME ENTERPRISES, INC.,\\nDefendant.",
+        title: "DECLARATION OF JANE DOE IN SUPPORT OF MOTION",
+        body: "I, Jane Doe, declare under penalty of perjury under the laws of the State of Oregon:\\n\\n1. I am the Plaintiff in this action and have personal knowledge of the facts stated herein.\\n\\n2. On June 1, 2026, I received formal notice regarding the pending hearing.\\n\\n3. Attached hereto as Exhibit 1 is a true and correct copy of the written correspondence.\\n\\nI hereby declare that the above statement is true to the best of my knowledge and belief."
+      },
+      complaint: {
+        court: "IN THE UNITED STATES DISTRICT COURT\\nFOR THE DISTRICT OF OREGON - PORTLAND DIVISION",
+        caseNo: "Case No. 3:26-cv-00123",
+        plaintiff: "JOHN DOE and JANE ROE,\\nPlaintiffs,",
+        defendant: "SAMPLE MUNICIPALITY, et al.,\\nDefendants.",
+        title: "COMPLAINT FOR VIOLATIONS OF CIVIL RIGHTS (42 U.S.C. § 1983)",
+        body: "1. This is a civil rights action arising under 42 U.S.C. § 1983 for the deprivation of constitutional rights under color of state law.\\n\\n2. Plaintiffs are residents of Clackamas County, Oregon.\\n\\n3. Defendants acted under color of state law to deprive Plaintiffs of clearly established constitutional and statutory rights.\\n\\nWHEREFORE, Plaintiffs demand a trial by jury and pray for declaratory and injunctive relief."
+      }
+    };
+
+    function loadPreset(key) {
+      document.querySelectorAll('.pill').forEach(p => p.classList.remove('active'));
+      event.target.classList.add('active');
+      const data = presets[key];
+      document.getElementById('courtHeader').value = data.court.replace(/\\\\n/g, '\\n');
+      document.getElementById('caseNumber').value = data.caseNo;
+      document.getElementById('plaintiffText').value = data.plaintiff.replace(/\\\\n/g, '\\n');
+      document.getElementById('defendantText').value = data.defendant.replace(/\\\\n/g, '\\n');
+      document.getElementById('docTitle').value = data.title;
+      document.getElementById('bodyText').value = data.body.replace(/\\\\n/g, '\\n');
+      updatePreview();
+    }
+
+    function updatePreview() {
+      const title = document.getElementById('docTitle').value || 'LEGAL PLEADING';
+      document.getElementById('previewCourt').innerText = document.getElementById('courtHeader').value;
+      document.getElementById('previewCaseNo').innerText = document.getElementById('caseNumber').value;
+      document.getElementById('previewPlaintiff').innerText = document.getElementById('plaintiffText').value;
+      document.getElementById('previewDefendant').innerText = document.getElementById('defendantText').value;
+      document.getElementById('previewTitle').innerText = title;
+      document.getElementById('previewBody').innerText = document.getElementById('bodyText').value;
+      document.getElementById('previewFooter').innerText = `Page 1 of 1 -- ${title}`;
+    }
+
+    function downloadPreview() {
+      window.print();
+    }
+
+    // Init preview
+    updatePreview();
+
+    document.getElementById('clinicForm')?.addEventListener('submit', function (e) {
+      e.preventDefault();
+      const fd = new FormData(e.target);
+      const lead = Object.fromEntries(fd.entries());
+      lead.createdAt = new Date().toISOString();
+      const key = 'justitex-clinic-leads';
+      const prev = JSON.parse(localStorage.getItem(key) || '[]');
+      prev.unshift(lead);
+      localStorage.setItem(key, JSON.stringify(prev.slice(0, 50)));
+      const subject = encodeURIComponent('JustiTeX Clinic license — ' + lead.org);
+      const body = encodeURIComponent('Clinic / firm license inquiry\n\nOrganization: ' + lead.org + '\nEmail: ' + lead.email + '\nCounty: ' + lead.county + '\nSeats: ' + lead.seats + '\n\nPlease send the $149/year clinic license invoice.');
+      window.location.href = 'mailto:annika@executivefunctionos.com?subject=' + subject + '&body=' + body;
+      document.getElementById('clinicStatus').textContent = 'Saved locally. Opening a mail draft to annika@executivefunctionos.com';
+    });
+  </script>
+</body>
+</html>
+
