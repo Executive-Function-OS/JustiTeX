@@ -1,0 +1,8 @@
+.vercel
+__pycache__/
+*.py[cod]
+*$py.class
+*.egg-info/
+.pytest_cache/
+.DS_Store
+template_pack_staging/

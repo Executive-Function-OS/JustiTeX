@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>JustiTeX Pro Pack — Order Fulfillment</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #07090e;
+      --card-bg: #101626;
+      --card-border: #232f48;
+      --primary: #8b5cf6;
+      --success: #10b981;
+      --text: #f8fafc;
+      --text-muted: #94a3b8;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Inter', system-ui, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      max-width: 680px;
+      margin: 4rem auto;
+      padding: 0 1.5rem;
+      line-height: 1.6;
+    }
+    a { color: #6ee7b7; text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    .card {
+      border: 1px solid var(--card-border);
+      background: var(--card-bg);
+      border-radius: 1.25rem;
+      padding: 2.5rem;
+      box-shadow: 0 20px 40px rgba(0,0,0,0.5);
+    }
+    .badge {
+      font-size: 0.75rem;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      font-weight: 800;
+      color: var(--success);
+      background: rgba(16, 185, 129, 0.12);
+      padding: 0.3rem 0.8rem;
+      border-radius: 999px;
+      display: inline-block;
+      margin-bottom: 1rem;
+    }
+    h1 { font-size: 2rem; font-weight: 800; margin-bottom: 0.75rem; letter-spacing: -0.02em; }
+    p { color: var(--text-muted); margin-bottom: 1.25rem; font-size: 0.95rem; }
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      background: var(--success);
+      color: #04140d;
+      font-weight: 700;
+      font-size: 1.05rem;
+      padding: 0.9rem 1.8rem;
+      border-radius: 0.75rem;
+      text-decoration: none;
+      box-shadow: 0 10px 25px -5px rgba(16, 185, 129, 0.4);
+      transition: transform 0.15s ease;
+    }
+    .btn:hover {
+      transform: translateY(-2px);
+      text-decoration: none;
+    }
+    .file-list {
+      background: rgba(7, 9, 14, 0.6);
+      border: 1px solid var(--card-border);
+      border-radius: 0.75rem;
+      padding: 1.25rem;
+      margin: 1.5rem 0;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.82rem;
+      color: #cbd5e1;
+    }
+    .file-list ul { list-style: none; display: grid; grid-template-columns: 1fr 1fr; gap: 0.4rem; padding: 0; }
+    .file-list li::before { content: "✓ "; color: var(--success); }
+    .clinic-box {
+      margin-top: 2rem;
+      padding-top: 1.5rem;
+      border-top: 1px solid var(--card-border);
+      font-size: 0.88rem;
+    }
+    .back-link {
+      display: inline-block;
+      margin-top: 1.5rem;
+      color: var(--text-muted);
+      font-size: 0.88rem;
+    }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <span class="badge">Payment Confirmed • Instant Fulfillment</span>
+    <h1>Your JustiTeX Pro Pack Is Ready</h1>
+    <p>Thank you for supporting open-access justice tooling! Your payment has been processed through Stripe. Download your commercial-grade 9-template Oregon & Federal pack below:</p>
+    
+    <a class="btn" href="JustiTeX_Pro_Oregon_Template_Pack_v2.0.zip" download>
+      📦 Download Pro Pack (.ZIP)
+    </a>
+
+    <div class="file-list">
+      <div style="font-weight: 700; color: #f8fafc; margin-bottom: 0.5rem; font-family: 'Inter', sans-serif;">Included in Version 2.0:</div>
+      <ul>
+        <li>oregon_pleading_28line.tex</li>
+        <li>federal_pleading_template.tex</li>
+        <li>motion_template.tex</li>
+        <li>declaration_template.tex</li>
+        <li>notice_of_appeal_template.tex</li>
+        <li>proposed_order_template.tex</li>
+        <li>certificate_of_service.tex</li>
+        <li>pleading.sty (core grid engine)</li>
+        <li>QUICKSTART_GUIDE.md</li>
+        <li>CHEAT_SHEET.md</li>
+      </ul>
+    </div>
+
+    <div class="clinic-box">
+      <p><strong>Legal Aid Clinics & Public Defender Offices:</strong> Need shared team seats, county venue customization, or institutional billing? Request our <a href="./#clinic">Clinic License ($149/year)</a>.</p>
+    </div>
+
+    <a class="back-link" href="./">← Return to Pleading Studio</a>
+  </div>
+</body>
+</html>

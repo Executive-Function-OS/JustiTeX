@@ -1,0 +1,71 @@
+name: Deploy JustiTeX site
+
+on:
+  push:
+    branches: [master, main]
+  pull_request:
+    branches: [master, main]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Run Incremental Improvement & Contract Verification
+        run: |
+          set -euo pipefail
+          python scripts/incremental_improvement_loop.py --verify
+
+      - name: Verify landing contracts
+        run: |
+          set -euo pipefail
+          test -f index.html
+          test -f success.html
+          grep -q 'buy.stripe.com/dRm00cgtQaY20Cf3eS6J201' index.html
+          grep -q 'github.com/Executive-Function-OS/JustiTeX' index.html
+          grep -q 'Clinic & Public Defender License' index.html
+          grep -q '@media print' index.html
+          if grep -q 'YourUsername' index.html; then echo 'placeholder GitHub URL'; exit 1; fi
+
+  pages:
+    if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
+    needs: verify
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Stage static site
+        run: |
+          mkdir -p _site
+          cp index.html success.html IMPROVEMENTS.md _site/
+          if [ -f JustiTeX_Pro_Oregon_Template_Pack_v2.0.zip ]; then
+            cp JustiTeX_Pro_Oregon_Template_Pack_v2.0.zip _site/
+          fi
+          if [ -f justitex-oregon-template-pack.zip ]; then
+            cp justitex-oregon-template-pack.zip _site/
+          fi
+      - uses: actions/configure-pages@v5
+        with:
+          enablement: true
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: _site
+      - id: deployment
+        uses: actions/deploy-pages@v4

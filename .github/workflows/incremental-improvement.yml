@@ -1,0 +1,49 @@
+name: Incremental Improvement Automation Loop
+
+on:
+  schedule:
+    # Run daily at 04:00 UTC
+    - cron: '0 4 * * *'
+  workflow_dispatch:
+    inputs:
+      auto_commit:
+        description: 'Auto-commit improvements if changes detected'
+        required: false
+        default: 'true'
+        type: string
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  improvement-loop:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Execute Incremental Improvement Loop
+        run: |
+          set -euo pipefail
+          python scripts/incremental_improvement_loop.py --apply --verify
+
+      - name: Commit and Push Incremental Improvements (if changed)
+        run: |
+          git config user.name "JustiTeX Automation Bot"
+          git config user.email "bot@justitex.org"
+          if [[ -n $(git status --porcelain) ]]; then
+            echo "Changes detected after running improvement loop. Committing..."
+            git add -A
+            git commit -m "chore(automation): run incremental improvement identification loop [skip ci]"
+            git push
+          else
+            echo "No changes detected. Improvement log is already current."
+          fi
