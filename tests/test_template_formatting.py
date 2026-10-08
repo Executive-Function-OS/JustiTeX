@@ -11,6 +11,12 @@ class TemplateFormattingTests(unittest.TestCase):
     def setUp(self):
         self.compiler = JustiTeXCompiler(court_format="state")
 
+    def test_emotional_does_not_match_motion_title_keyword(self):
+        title = "### Intentional Infliction of Emotional Distress & Bodily Harm"
+
+        self.assertEqual(self.compiler.extract_document_title(title), "LEGAL PLEADING")
+        self.assertEqual(self.compiler._escape_latex("COMPLAINT & MOTION"), r"COMPLAINT \& MOTION")
+
     def test_claim_labels_and_subtitles_render_as_two_line_macros(self):
         markdown = """### FIFTH CLAIM FOR RELIEF
 Intentional Infliction of Emotional Distress & Bodily Harm

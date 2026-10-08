@@ -27,7 +27,8 @@ class JustiTeXCompiler:
         lines = md_text.splitlines()
         for line in lines[:35]:
             clean = line.strip().strip("#* ").strip()
-            if any(term in clean.upper() for term in ["COMPLAINT", "MOTION", "DECLARATION", "PETITION", "MEMORANDUM", "ANSWER", "REPLY", "NOTICE"]):
+            if any(re.search(rf"\b{re.escape(term)}\b", clean, re.IGNORECASE)
+                   for term in ["COMPLAINT", "MOTION", "DECLARATION", "PETITION", "MEMORANDUM", "ANSWER", "REPLY", "NOTICE"]):
                 clean_title = re.sub(r'[*_#]', '', clean).strip()
                 if len(clean_title) > 65:
                     clean_title = clean_title[:62] + "..."
@@ -245,8 +246,9 @@ class JustiTeXCompiler:
         with open(template_path, "r", encoding="utf-8") as f:
             template_content = f.read()
 
-        template_content = template_content.replace("DYNAMIC_FOOTER_TITLE", doc_title)
-        template_content = template_content.replace("Defendant's Consolidated Petition for Hardship Relief", doc_title)
+        safe_doc_title = self._escape_latex(doc_title)
+        template_content = template_content.replace("DYNAMIC_FOOTER_TITLE", safe_doc_title)
+        template_content = template_content.replace("Defendant's Consolidated Petition for Hardship Relief", safe_doc_title)
 
         parsed_body = self.parse_markdown_to_latex(md_text, court_format)
 
