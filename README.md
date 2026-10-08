@@ -43,6 +43,25 @@ Generate a court-compliant PDF pleading from a Markdown document:
 python3 -m justitex.compile --input examples/sample_motion.md --output build/Sample_Motion.pdf
 ```
 
+### First-page start and claim headings
+
+The Oregon 28-line template offsets first-page body content by six grid pitches,
+so its first text baseline starts at line 7. Claim headings use an uppercase
+claim label followed by a centered, regular-weight subtitle. Put an unmarked
+subtitle immediately after its claim heading (no blank line), or use a `####`
+subtitle heading when separating it with a blank line:
+
+```markdown
+### FIFTH CLAIM FOR RELIEF
+Intentional Infliction of Emotional Distress & Bodily Harm
+
+### SIXTH CLAIM FOR RELIEF
+Security Deposit Accounting & Reservation of Rights (ORS 90.300 / ORS 71.3080)
+```
+
+This line-7 position is a JustiTeX layout choice, not a statement that Oregon
+requires line-numbered pleading paper.
+
 ---
 
 ## 🏗️ Project Architecture

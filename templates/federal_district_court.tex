@@ -41,6 +41,16 @@
   \vspace{0.25em}%
 }
 
+\newcommand{\claimheading}[2]{%
+  \par\vspace{1em}%
+  \begin{center}%
+    \textbf{\MakeUppercase{#1}}\par
+    \if\relax\detokenize{#2}\relax\else
+      \vspace{0.25em}{\normalfont #2\par}%
+    \fi
+  \end{center}%
+  \vspace{0.5em}%
+}
+
 \begin{document}
 \doublespacing
-
