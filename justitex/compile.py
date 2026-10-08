@@ -35,8 +35,13 @@ class JustiTeXCompiler:
         return default
 
     def detect_court_format(self, md_text):
-        text_upper = md_text.upper()
-        if "UNITED STATES DISTRICT COURT" in text_upper or "DISTRICT OF OREGON" in text_upper or "42 U.S.C." in text_upper or "PORTLAND DIVISION" in text_upper:
+        # Court format follows the court identified in the caption, not the
+        # substantive statutes or venues mentioned later in the pleading.
+        caption_lines = md_text.splitlines()[:12]
+        caption_text = "\n".join(re.sub(r'^\s*#+\s*', '', line).strip() for line in caption_lines).upper()
+        if "IN THE CIRCUIT COURT" in caption_text or "FOR THE COUNTY OF" in caption_text:
+            return "state"
+        if "UNITED STATES DISTRICT COURT" in caption_text:
             return "federal"
         return "state"
 
@@ -49,6 +54,42 @@ class JustiTeXCompiler:
         text = re.sub(r'Executed on\s+[A-Za-z]+(?:\s+_+|\s*,|\s*\d*),\s*\d{4}', f"Executed on {full_date}", text)
         text = re.sub(r'Dated:\s*(?:_+|[A-Za-z]+\s+\d{1,2},\s+\d{4}|[A-Za-z]+\s+_+,\s+\d{4})', f"Dated: {full_date}", text)
         return text
+
+    @staticmethod
+    def _is_claim_heading(title):
+        """Recognize claim/count headings without depending on a fixed claim number."""
+        return bool(re.search(r'\b(?:CLAIM(?:\s+FOR\s+RELIEF)?|COUNT)\b', title, re.IGNORECASE))
+
+    def _claim_heading_tex(self, lines, heading_index, title):
+        """Return styled claim TeX and the index of any consumed subtitle line.
+
+        A plain subtitle may immediately follow the claim heading with no blank
+        line. Alternatively, an explicit Markdown ``#### subtitle`` may follow,
+        including after a blank line. This avoids mistaking a separated body
+        paragraph for a heading subtitle.
+        """
+        subtitle = ""
+        consumed_index = heading_index
+        next_index = heading_index + 1
+        probe = next_index
+        while probe < len(lines) and not lines[probe].strip():
+            probe += 1
+
+        if probe < len(lines):
+            candidate = lines[probe].strip()
+            if candidate.startswith("#### "):
+                subtitle = candidate[5:].strip()
+                consumed_index = probe
+            elif (probe == next_index and candidate
+                  and not candidate.startswith("#")
+                  and not re.match(r'^(?:\d+[.)]|[a-z][.)])\s+', candidate, re.IGNORECASE)
+                  and not re.match(r'^(?:DATED:|RESPECTFULLY|/S/|WHEREFORE\b)', candidate, re.IGNORECASE)):
+                subtitle = candidate
+                consumed_index = probe
+
+        label_tex = self._escape_latex(title)
+        subtitle_tex = self._escape_latex(subtitle)
+        return f"\\claimheading{{{label_tex}}}{{{subtitle_tex}}}", consumed_index
 
     def parse_markdown_to_latex(self, md_text, court_format):
         # Inject dynamic execution dates
@@ -71,7 +112,7 @@ class JustiTeXCompiler:
             if line_str.startswith("# ") and i < 5:
                 court_title = line_str.strip("# *").strip()
                 i += 1
-                while i < len(lines) and (lines[i].startswith("## ") or lines[i].startswith("**")):
+                while i < len(lines) and (lines[i].startswith(("# ", "## ")) or lines[i].startswith("**")):
                     court_title += " \\\\\n" + lines[i].strip("# *").strip()
                     i += 1
                 
@@ -126,16 +167,21 @@ class JustiTeXCompiler:
             # Section Headings (Level 1: Centered & Bolded)
             if line_str.startswith("## ") or line_str.startswith("# "):
                 title = line_str.strip("# *").strip()
-                clean_title = self._escape_latex(title)
-                latex_lines.append(f"\\vspace{{1.25em}}\\begin{{center}}\\textbf{{\\large {clean_title}}}\\end{{center}}\\vspace{{0.5em}}")
+                if self._is_claim_heading(title):
+                    claim_tex, i = self._claim_heading_tex(lines, i, title)
+                    latex_lines.append(claim_tex)
+                else:
+                    clean_title = self._escape_latex(title)
+                    latex_lines.append(f"\\romanhead{{{clean_title}}}")
             # Sub-Section Headings (Level 2: Centered for claims, left-aligned bold for topics)
             elif line_str.startswith("### "):
                 title = line_str.strip("# *").strip()
-                clean_title = self._escape_latex(title)
-                if any(k in title.upper() for k in ["COUNT ", "FIRST CLAIM", "SECOND CLAIM", "THIRD CLAIM", "FOURTH CLAIM", "FIFTH CLAIM", "SIXTH CLAIM", "SEVENTH CLAIM", "EIGHTH CLAIM"]):
-                    latex_lines.append(f"\\vspace{{1em}}\\begin{{center}}\\textbf{{\\normalsize {clean_title}}}\\end{{center}}\\vspace{{0.4em}}")
+                if self._is_claim_heading(title):
+                    claim_tex, i = self._claim_heading_tex(lines, i, title)
+                    latex_lines.append(claim_tex)
                 else:
-                    latex_lines.append(f"\\vspace{{0.75em}}\\noindent\\textbf{{{clean_title}}}\\par\\vspace{{0.25em}}")
+                    clean_title = self._escape_latex(title)
+                    latex_lines.append(f"\\subhead{{{clean_title}}}")
             # Horizontal rule
             elif line_str.startswith("---"):
                 latex_lines.append("\\vspace{0.75em}\\hrule\\vspace{0.75em}")

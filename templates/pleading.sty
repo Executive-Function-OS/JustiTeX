@@ -1,4 +1,4 @@
-% pleading.sty — UTCR-compliant Oregon pleading paper
+% pleading.sty — Oregon 28-line pleading-paper layout helpers
 % Geometry reverse-engineered from Memorandum_of_Points_and_Authorities.pdf
 %   page 612 x 792 bp (letter); text left 1.5in, right 1in (6in measure)
 %   28-line grid, 23.1425 bp apart, first baseline 94.455 bp from page top
@@ -6,7 +6,7 @@
 %   double left rule at x = 90.72 bp and 93.60 bp, 72 bp -> 720 bp from top
 %   footer baseline 43.54 bp from page bottom, flush with text left margin
 \NeedsTeXFormat{LaTeX2e}
-\ProvidesPackage{pleading}[2026/08/03 Oregon pleading paper]
+\ProvidesPackage{pleading}[2026/10/08 Line-7 start and claim-heading styles]
 
 \RequirePackage{fontspec}
 \RequirePackage{geometry}
@@ -39,6 +39,15 @@
 
 \newlength{\gridline}\setlength{\gridline}{23.1425bp}
 \setlength{\topskip}{\gridline}
+% One-time first-page body offset: line 1 baseline plus six grid pitches = line 7.
+\newif\ifpleadingfirstpagepositioned
+\pleadingfirstpagepositionedfalse
+\newcommand{\pleadingfirstpage}{%
+  \ifpleadingfirstpagepositioned\else
+    \vspace*{6\gridline}%
+    \global\pleadingfirstpagepositionedtrue
+  \fi}
+\AtBeginDocument{\pleadingfirstpage}
 \setstretch{1.601576}       % 14.5pt x 1.601576 = 23.1425bp baseline grid
 \setlength{\parindent}{0pt}
 \setlength{\parskip}{0pt}
@@ -142,6 +151,15 @@
 \newcommand{\subhead}[1]{%
   \par\vspace{\gridline}%
   {\noindent\bfseries #1\par}\nopagebreak\vspace{\gridline}\nopagebreak}
+
+% Claim heading: bold uppercase label followed by a centered regular-weight title.
+\newcommand{\claimheading}[2]{%
+  \par\vspace{\gridline}%
+  {\centering\bfseries\MakeUppercase{#1}\par}\nopagebreak
+  \if\relax\detokenize{#2}\relax\else
+    {\centering\normalfont #2\par}\nopagebreak
+  \fi
+  \vspace{\gridline}\nopagebreak}
 
 % Signature blocks are set inside a minipage, which TeX cannot split, so a
 % block that does not fit migrates whole to the next page automatically.
